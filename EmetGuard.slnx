@@ -1,1 +1,6 @@
-<Solution />
+<Solution>
+  <Project Path="DAL/DAL.csproj" />
+  <Project Path="EmetGuard/EmetGuard.csproj" />
+  <Project Path="EmetGuardView/EmetGuardView.csproj" />
+  <Project Path="Model/Model.csproj" />
+</Solution>
