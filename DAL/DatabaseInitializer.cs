@@ -51,6 +51,7 @@ namespace DAL
                     Email VARCHAR(100) NOT NULL UNIQUE,
                     PasswordHash VARCHAR(255) NOT NULL,
                     RoleID INT NOT NULL,
+                    IsActive BOOLEAN NOT NULL DEFAULT TRUE,
                     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (RoleID) REFERENCES Roles(RoleID) ON DELETE RESTRICT ON UPDATE CASCADE
                 ) ENGINE=InnoDB;

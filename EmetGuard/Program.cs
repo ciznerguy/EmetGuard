@@ -11,6 +11,12 @@ namespace EmetGuard
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
+            // רישום UserDB עם מחרוזת חיבור מלאה (כולל שם בסיס הנתונים), כדי שה-Controllers יקבלו אותו אוטומטית
+            string dbConnectionString = (builder.Configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
+                + "Database=EmetGuardDB;";
+            builder.Services.AddSingleton(new DAL.UserDB(dbConnectionString));
+
             var app = builder.Build();
 
             // שליפת מחרוזת החיבור מ-appsettings.json / User Secrets והפעלת אתחול ה-Database

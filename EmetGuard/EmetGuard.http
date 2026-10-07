@@ -1,6 +1,100 @@
 @EmetGuard_HostAddress = http://localhost:5214
 
-GET {{EmetGuard_HostAddress}}/weatherforecast/
+###
+
+# ===== Users =====
+
+# כל המשתמשים
+GET {{EmetGuard_HostAddress}}/api/users
 Accept: application/json
+
+###
+
+# משתמש לפי מזהה
+GET {{EmetGuard_HostAddress}}/api/users/1
+Accept: application/json
+
+###
+
+# האם שם משתמש קיים (צפוי: true)
+GET {{EmetGuard_HostAddress}}/api/users/exists/admin
+
+###
+
+# האם שם משתמש קיים (צפוי: true)
+GET {{EmetGuard_HostAddress}}/api/users/exists/dana.cohen
+
+###
+
+# האם אימייל קיים (צפוי: true)
+GET {{EmetGuard_HostAddress}}/api/users/email-exists/admin@example.com
+
+###
+
+# ספירת משתמשים לפי תפקיד
+GET {{EmetGuard_HostAddress}}/api/users/count-by-role
+
+###
+
+# הוספת משתמש בדיקה (תפקיד ברירת מחדל: Student)
+POST {{EmetGuard_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "username": "test.user",
+  "email": "test.user@example.com",
+  "password": "Test123"
+}
+
+###
+
+# התחברות עם פרטים נכונים (צפוי: 200 והמשתמש)
+POST {{EmetGuard_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin123"
+}
+
+###
+
+# התחברות עם סיסמה שגויה (צפוי: 401)
+POST {{EmetGuard_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "wrong"
+}
+
+###
+
+# הבקשות הבאות פועלות על משתמש הבדיקה.
+# לפני ההרצה, להחליף את 11 במזהה שהוחזר בהוספת המשתמש.
+
+# שינוי תפקיד
+PUT {{EmetGuard_HostAddress}}/api/users/11/role?roleName=Teacher
+
+###
+
+# עדכון סיסמה
+PUT {{EmetGuard_HostAddress}}/api/users/11/password
+Content-Type: application/json
+
+"NewPass123"
+
+###
+
+# עדכון אימייל
+PUT {{EmetGuard_HostAddress}}/api/users/11/email
+Content-Type: application/json
+
+"new.test.user@example.com"
+
+###
+
+# מחיקת משתמש הבדיקה
+DELETE {{EmetGuard_HostAddress}}/api/users/11
 
 ###
