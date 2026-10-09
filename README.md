@@ -25,6 +25,6 @@
 |---|---|---|
 | למה צריך מחלקת בסיס (BaseEntity) | 3 | [בסוף מדריך גרסה 3](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) |
 | Bootstrap לעומק, עם דוגמאות מהאתר | 4 | [בסוף מדריך גרסה 4](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) |
-| פביקון: מה זה, איך יוצרים ואיך מעלים לאתר | 4 | [נספח פביקון](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) |
+| פביקון: מה זה, איך יוצרים ואיך מעלים לאתר | 4 | [נספח לגרסה 4: פביקון](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) |
 
 </div>
