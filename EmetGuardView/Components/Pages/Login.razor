@@ -1,0 +1,28 @@
+@page "/login"
+
+<PageTitle>כניסה · EmetGuard</PageTitle>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <div class="card card-scan shadow-sm border-0 rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <h1 class="h2 fw-bold">כניסה</h1>
+                    <p class="text-secondary mb-4">היכנסו לחשבון כדי להצביע בשיעור.</p>
+
+                    <form novalidate>
+                        <Field Id="login-username" Label="שם משתמש" Name="username" />
+                        <Field Id="login-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" />
+
+                        @* type="button": בשלב הזה הכפתור לא שולח את הטופס. ההפעלה תיכתב בהמשך ב-C# *@
+                        <button class="btn btn-primary btn-lg w-100 mt-2" type="button">כניסה</button>
+                    </form>
+                </div>
+            </div>
+
+            <p class="text-center mt-4">אין לך חשבון? <a class="fw-bold" href="register">להרשמה</a></p>
+
+        </div>
+    </div>
+</div>

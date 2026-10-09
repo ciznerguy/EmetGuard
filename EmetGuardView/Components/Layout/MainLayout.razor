@@ -1,23 +1,30 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+@* המבנה של כל דפי האתר: סרגל עליון, תוכן הדף ותחתית *@
+
+<header class="topbar sticky-top">
+    <div class="container d-flex align-items-center justify-content-between py-3">
+        <Logo />
+        <nav class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="login">כניסה</a>
+            <a class="btn btn-primary" href="register">הרשמה</a>
+        </nav>
     </div>
+</header>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<main>
+    @Body
+</main>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<footer class="py-4 text-secondary small">
+    <div class="container d-flex flex-wrap justify-content-between gap-2">
+        <span>EmetGuard · אמת או חובה</span>
+        <span>פרויקט דוגמה בהנדסת תוכנה</span>
+    </div>
+</footer>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    אירעה שגיאה.
+    <a href="." class="reload">רענון</a>
     <span class="dismiss">🗙</span>
 </div>

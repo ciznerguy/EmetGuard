@@ -1,7 +1,202 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>EmetGuard · אמת או חובה</PageTitle>
 
-<h1>Hello, world!</h1>
+@* ===== פתיחה: מטרת האתר ===== *@
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="text-primary fw-semibold mb-2">כלי לשיעור בכיתה</p>
+                <h1 class="display-4 fw-bold mb-3">לומדים לזהות <span class="mark-word">פייק</span>, ביחד, בכיתה.</h1>
+                <p class="lead text-secondary">
+                    EmetGuard הוא כלי לשיעור על אמינות מידע. המורה מציג ידיעה שמסתובבת ברשת, כל תלמיד מצביע מהטלפון אם היא אמת או פייק,
+                    והכיתה רואה את התוצאות מיד. אחר כך מגיע החלק החשוב: מביאים ראיות ומקורות, מתווכחים, ובסוף המורה מפרסם את המסקנה.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                    <a class="btn btn-primary btn-lg" href="register">להרשמה</a>
+                    <a class="btn btn-outline-primary btn-lg" href="login">כבר רשום? לכניסה</a>
+                </div>
+            </div>
 
-Welcome to your new app.
+            @* איור: ידיעה על הלוח ותוצאות ההצבעה *@
+            <div class="col-lg-5" aria-hidden="true">
+                <div class="card card-scan shadow border-0 rounded-4">
+                    <div class="card-body p-4">
+                        <span class="badge rounded-pill bg-accent mb-3">ידיעה לבדיקה</span>
+                        <p class="placeholder-wave mb-4">
+                            <span class="placeholder col-10 bg-dark"></span>
+                            <span class="placeholder col-12 bg-secondary"></span>
+                            <span class="placeholder col-8 bg-secondary"></span>
+                        </p>
+                        <p class="small text-secondary mb-2">הצבעת הכיתה · 26 תלמידים</p>
+                        <div class="d-flex align-items-center gap-3 mb-2 fw-semibold">
+                            <span class="text-true" style="width: 40px">אמת</span>
+                            <div class="progress flex-grow-1"><div class="progress-bar bg-true" style="width: 38%"></div></div>
+                            <span class="text-true">38%</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 fw-semibold">
+                            <span class="text-fake" style="width: 40px">פייק</span>
+                            <div class="progress flex-grow-1"><div class="progress-bar bg-fake" style="width: 62%"></div></div>
+                            <span class="text-fake">62%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ===== למה זה חשוב עכשיו ===== *@
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <p class="text-primary fw-semibold mb-2">למה זה חשוב עכשיו</p>
+        <h2 class="fw-bold mb-5">בעולם של היום, לא מספיק לראות כדי להאמין</h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <span class="icon-box mb-3" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="1.8"></circle><path d="M21 16l-5-5-8 8"></path></svg>
+                </span>
+                <h3 class="h5 fw-semibold">תמונה כבר לא הוכחה</h3>
+                <p class="text-secondary">כלי בינה מלאכותית יוצרים תוך שניות תמונה, קול או סרטון שנראים אמיתיים לגמרי. מי שלא יודע מה לחפש, פשוט לא יבחין בהבדל.</p>
+            </div>
+
+            <div class="col-md-4">
+                <span class="icon-box mb-3" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"></path></svg>
+                </span>
+                <h3 class="h5 fw-semibold">השקר מגיע ראשון</h3>
+                <p class="text-secondary">חוקרים מ-MIT בדקו כ-126 אלף ידיעות שהופצו בטוויטר, ומצאו שידיעה שקרית הגיעה ל-1,500 אנשים בערך פי שישה מהר יותר מידיעה נכונה.</p>
+                <p class="small text-secondary">
+                    מקור: <a href="https://www.media.mit.edu/publications/the-spread-of-true-and-false-news-online/" target="_blank" rel="noopener">Vosoughi, Roy & Aral, Science, 2018</a>
+                </p>
+            </div>
+
+            <div class="col-md-4">
+                <span class="icon-box mb-3" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.5"></circle><circle cx="6" cy="12" r="2.5"></circle><circle cx="18" cy="19" r="2.5"></circle><path d="M8.2 10.8l7.6-4.4M8.2 13.2l7.6 4.4"></path></svg>
+                </span>
+                <h3 class="h5 fw-semibold">כל אחד הוא גם מפיץ</h3>
+                <p class="text-secondary">לחיצה על "שתף" לוקחת שנייה. בדיקה של המקור לוקחת דקה, והיא ההבדל בין מי שמפיץ שמועה לבין מי שעוצר אותה.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ===== שתי ידיעות פייק מהעולם ===== *@
+<section class="py-5">
+    <div class="container">
+        <p class="text-primary fw-semibold mb-2">מהעולם</p>
+        <h2 class="fw-bold mb-5">שתי ידיעות שהטעו מיליונים</h2>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <article class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="position-relative">
+                        <div class="ratio ratio-16x9">
+                            <img class="object-fit-cover fake-photo" src="@Assets["images/pope-ai-puffer.jpg"]" alt="התמונה המזויפת: האפיפיור פרנציסקוס במעיל פוך לבן ארוך, ברחוב" />
+                        </div>
+                        <span class="badge badge-fake fs-6 position-absolute top-0 end-0 m-3">✕ פייק</span>
+                        <span class="fake-caption rounded px-2 py-1 position-absolute bottom-0 start-0 m-3">תמונה שנוצרה ב-Midjourney</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="small text-secondary mb-1">מרץ 2023 · בינה מלאכותית</p>
+                        <h3 class="h4 fw-bold mb-3">האפיפיור במעיל פוך לבן</h3>
+
+                        <p class="fw-semibold text-fake mb-1">מה הופץ</p>
+                        <p>תמונה של האפיפיור פרנציסקוס במעיל פוך לבן ואופנתי עברה מרשת לרשת ונצפתה מיליוני פעמים. רבים היו בטוחים שזו תמונה אמיתית מרומא.</p>
+
+                        <p class="fw-semibold text-true mb-1">מה האמת</p>
+                        <p>את התמונה יצר אדם מאזור שיקגו בתוכנה Midjourney, שמייצרת תמונות בבינה מלאכותית. הוא אמר שעשה את זה בצחוק, ושהופתע מכמה אנשים האמינו. שירות הצילום של הוותיקן אישר שהתמונה אינה אמיתית.</p>
+
+                        <div class="fake-tip rounded-3 p-3 mb-3">
+                            <p class="fw-semibold text-primary mb-1">איך אפשר היה לזהות</p>
+                            <p class="mb-0">מסתכלים על הפרטים הקטנים, שם בינה מלאכותית נוטה לטעות: היד שאוחזת בבקבוק, המשקפיים, השרשרת. ובודקים אם מישהו מאתרי החדשות המוכרים פרסם את התמונה. אף אחד לא פרסם.</p>
+                        </div>
+                        <p class="small text-secondary mb-0">
+                            לקריאה נוספת: <a href="https://www.popsci.com/technology/pope-francis-ai-midjourney/" target="_blank" rel="noopener">Popular Science</a>
+                        </p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="col-lg-6">
+                <article class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="position-relative">
+                        <div class="ratio ratio-16x9">
+                            <img class="object-fit-cover" src="@Assets["images/tom-cruise-deepfake.jpg"]" alt="פריים מהסרטון המזויף: 'טום קרוז' מחזיק מטבע, בממשק של טיקטוק" />
+                        </div>
+                        <span class="badge badge-fake fs-6 position-absolute top-0 end-0 m-3">✕ פייק</span>
+                        <span class="fake-caption rounded px-2 py-1 position-absolute bottom-0 start-0 m-3">פריים מסרטון הדיפפייק בטיקטוק</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="small text-secondary mb-1">2021 · סרטון דיפפייק</p>
+                        <h3 class="h4 fw-bold mb-3">טום קרוז בטיקטוק</h3>
+
+                        <p class="fw-semibold text-fake mb-1">מה הופץ</p>
+                        <p>בתחילת 2021 עלו לטיקטוק סרטונים קצרים של "טום קרוז" משחק גולף ועושה קסם עם מטבע. הם נצפו מיליוני פעמים, ורבים היו בטוחים שזה השחקן עצמו.</p>
+
+                        <p class="fw-semibold text-true mb-1">מה האמת</p>
+                        <p>אמן אפקטים מבלגיה צילם שחקן שמתמחה בחיקוי של טום קרוז, והחליף לו את הפנים בעזרת תוכנת דיפפייק. כל סרטון דרש שבועות של עבודה, כולל תיקונים ידניים של העיניים והשיער.</p>
+
+                        <div class="fake-tip rounded-3 p-3 mb-3">
+                            <p class="fw-semibold text-primary mb-1">איך אפשר היה לזהות</p>
+                            <p class="mb-0">גם מומחים לזיהוי זיופים התקשו למצוא פגמים בסרטונים עצמם. לכן הבדיקה החשובה היא של המקור: החשבון נקרא deeptomcruise, והוא לא החשבון הרשמי של השחקן.</p>
+                        </div>
+                        <p class="small text-secondary mb-0">
+                            לקריאה נוספת: <a href="https://fortune.com/2021/03/02/tom-cruise-deepfake-videos-tik-tok-chris-ume" target="_blank" rel="noopener">Fortune</a>
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ===== איך זה עובד בשיעור ===== *@
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <p class="text-primary fw-semibold mb-2">איך זה עובד בשיעור</p>
+        <h2 class="fw-bold mb-5">מידיעה אחת לדיון של כל הכיתה</h2>
+
+        <ol class="list-unstyled row g-4 mb-0">
+            <li class="col-sm-6 col-lg-3">
+                <span class="step-num mb-3">1</span>
+                <h3 class="h5 fw-semibold">ידיעה על הלוח</h3>
+                <p class="text-secondary">המורה בוחר ידיעה שמסתובבת ברשת ומציג אותה לכיתה.</p>
+            </li>
+            <li class="col-sm-6 col-lg-3">
+                <span class="step-num mb-3">2</span>
+                <h3 class="h5 fw-semibold">הצבעה מהטלפון</h3>
+                <p class="text-secondary">כל תלמיד מצביע אמת או פייק, והתוצאות מתעדכנות מול כולם.</p>
+            </li>
+            <li class="col-sm-6 col-lg-3">
+                <span class="step-num mb-3">3</span>
+                <h3 class="h5 fw-semibold">ראיות ודיון</h3>
+                <p class="text-secondary">תלמידים מציעים מקורות שתומכים או מפריכים, והמורה מחליט מה עולה למסך.</p>
+            </li>
+            <li class="col-sm-6 col-lg-3">
+                <span class="step-num mb-3">4</span>
+                <h3 class="h5 fw-semibold">מסקנה</h3>
+                <p class="text-secondary">בסוף הדיון המורה מפרסם את המסקנה: אמת, פייק, או שאי אפשר להכריע.</p>
+            </li>
+        </ol>
+    </div>
+</section>
+
+@* ===== הזמנה ===== *@
+<section class="py-5">
+    <div class="container">
+        <div class="bg-primary text-white rounded-4 p-4 p-md-5 d-flex flex-wrap align-items-center justify-content-between gap-4">
+            <div>
+                <h2 class="fw-bold mb-2">מוכנים לבדוק את הידיעה הראשונה?</h2>
+                <p class="mb-0 opacity-75">ההרשמה לוקחת פחות מדקה.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-accent btn-lg" href="register">להרשמה</a>
+                <a class="btn btn-outline-light btn-lg" href="login">לכניסה</a>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,200 @@
+/* =====================================================
+   EmetGuard · העיצוב של האתר
+   האתר בנוי על Bootstrap. הקובץ הזה רק מתאים אותו לצבעים
+   ולגופנים שלנו, ומוסיף כמה דברים ש-Bootstrap לא מכיר.
+   ===================================================== */
+
+/* ---------- 1. צבעים וגופנים ---------- */
+:root {
+    /* הצבעים שלנו */
+    --primary: #0B5C55;       /* ירוק-פטרול: כפתורים, קישורים */
+    --primary-dark: #063B37;  /* מעבר עכבר, רקעים כהים */
+    --primary-light: #DDF0EC; /* רקעים בהירים */
+    --accent: #D7F56A;        /* ליים: מרקר והדגשות */
+    --true: #1A4FB0;          /* "אמת" */
+    --true-light: #E5EDFB;
+    --fake: #A8360A;          /* "פייק" */
+    --fake-light: #FDEBDF;
+
+    /* מעבירים את הצבעים והגופנים שלנו ל-Bootstrap */
+    --bs-primary: #0B5C55;
+    --bs-primary-rgb: 11, 92, 85;
+    --bs-link-color: #0B5C55;
+    --bs-link-color-rgb: 11, 92, 85;
+    --bs-link-hover-color: #063B37;
+    --bs-link-hover-color-rgb: 6, 59, 55;
+    --bs-body-bg: #F5F6F3;
+    --bs-body-color: #121A19;
+    --bs-body-font-family: 'Heebo', system-ui, sans-serif;
+    --bs-border-radius: 12px;
+    --bs-border-radius-lg: 20px;
+}
+
+body {
+    font-family: 'Heebo', system-ui, sans-serif;
+    background: #F5F6F3;
+}
+
+/* קישורים בצבע שלנו (app.css של התבנית צובע אותם בכחול) */
+a {
+    color: var(--primary);
+}
+
+/* כותרות וכפתורים בגופן Rubik */
+h1, h2, h3, h4, h5, h6, .btn {
+    font-family: 'Rubik', 'Heebo', sans-serif;
+}
+
+/* ---------- 2. כפתורים ושדות ---------- */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    --bs-btn-hover-bg: var(--primary-dark);
+    --bs-btn-hover-border-color: var(--primary-dark);
+    --bs-btn-active-bg: var(--primary-dark);
+    --bs-btn-active-border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--primary);
+    --bs-btn-border-color: var(--primary);
+    --bs-btn-hover-bg: var(--primary);
+    --bs-btn-hover-border-color: var(--primary);
+    --bs-btn-active-bg: var(--primary-dark);
+}
+
+/* כפתור בצבע ליים, לרקע כהה */
+.btn-accent {
+    background-color: var(--accent);
+    color: var(--primary-dark);
+    border-color: var(--accent);
+}
+.btn-accent:hover {
+    background-color: #EEFBC0;
+    color: var(--primary-dark);
+}
+
+.btn:focus-visible, .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(11, 92, 85, 0.22);
+}
+
+/* ---------- 3. לוגו וסרגל עליון ---------- */
+.topbar {
+    background: #fff;
+    border-bottom: 1px solid #DEE2DF;
+}
+
+.logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #121A19;
+    text-decoration: none;
+}
+.logo-name {
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.1;
+    direction: ltr;
+}
+.logo-tag {
+    font-size: 14px;
+    color: #3D4846;
+}
+
+/* ---------- 4. הדברים המיוחדים לנו ---------- */
+
+/* מרקר מתחת למילה */
+.mark-word {
+    background: linear-gradient(to top, var(--accent) 0 38%, transparent 38%);
+    padding-inline: 2px;
+}
+
+/* פינות עינית סביב כרטיס ("בבדיקה") */
+.card-scan {
+    position: relative;
+}
+.card-scan::before, .card-scan::after {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 0 solid var(--primary);
+}
+.card-scan::before {
+    top: -7px;
+    right: -7px;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-top-right-radius: 10px;
+}
+.card-scan::after {
+    bottom: -7px;
+    left: -7px;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-bottom-left-radius: 10px;
+}
+
+/* צבעי אמת ופייק */
+.text-true { color: var(--true); }
+.text-fake { color: var(--fake); }
+.bg-true { background-color: var(--true); }
+.bg-fake { background-color: var(--fake); }
+.badge-true { background-color: var(--true-light); color: var(--true); }
+.badge-fake { background-color: var(--fake); color: #fff; }
+.bg-accent { background-color: var(--accent); color: var(--primary-dark); }
+
+/* ריבוע אייקון ומספר שלב */
+.icon-box, .step-num {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-box {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+.step-num {
+    background: var(--primary-dark);
+    color: var(--accent);
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+}
+
+/* תמונה של ידיעת פייק */
+.fake-photo {
+    object-position: center 22%;
+}
+.fake-caption {
+    background: rgba(18, 26, 25, 0.78);
+    color: #fff;
+    font-size: 12px;
+}
+.fake-tip {
+    background: #EEF7F5;
+}
+
+/* ---------- 5. הודעת שגיאה של Blazor (מהתבנית) ---------- */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    left: 0.75rem;
+    top: 0.5rem;
+}

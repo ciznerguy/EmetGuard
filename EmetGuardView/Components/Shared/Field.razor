@@ -1,0 +1,23 @@
+@* שדה טופס: תווית ותיבת קלט של Bootstrap. כל שדה בטפסים נבנה מהרכיב הזה *@
+
+<div class="mb-3">
+    <label class="form-label fw-medium" for="@Id">
+        @Label <span class="text-danger" aria-hidden="true">*</span>
+    </label>
+    <input class="form-control form-control-lg" id="@Id" name="@Name" type="@Type" dir="@Dir" required />
+</div>
+
+@code {
+    // מזהה השדה, מקשר בין התווית לתיבת הקלט
+    [Parameter] public string Id { get; set; } = "";
+
+    [Parameter] public string Label { get; set; } = "";
+
+    [Parameter] public string? Name { get; set; }
+
+    // text, email, password וכדומה
+    [Parameter] public string Type { get; set; } = "text";
+
+    // ltr לשדות שמכילים אנגלית, כמו אימייל וסיסמה
+    [Parameter] public string? Dir { get; set; }
+}
