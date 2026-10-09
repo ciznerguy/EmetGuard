@@ -21,10 +21,10 @@
 
 הסברים מורחבים על נושאים שפגשנו בדרך. ליד כל נספח מצוין באיזו גרסה פגשנו את הנושא לראשונה.
 
-| נספח | פגשנו בגרסה | איפה |
-|---|---|---|
-| למה צריך מחלקת בסיס (BaseEntity) | 3 | [בסוף מדריך גרסה 3](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) |
-| Bootstrap לעומק, עם דוגמאות מהאתר | 4 | [בסוף מדריך גרסה 4](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) |
-| פביקון: מה זה, איך יוצרים ואיך מעלים לאתר | 4 | [נספח לגרסה 4: פביקון](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) |
+| נספח | פגשנו בגרסה |
+|---|---|
+| [למה צריך מחלקת בסיס (BaseEntity)](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) | 3 |
+| [Bootstrap לעומק, עם דוגמאות מהאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) | 4 |
+| [פביקון: מה זה, איך יוצרים ואיך מעלים לאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) | 4 |
 
 </div>
