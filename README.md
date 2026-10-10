@@ -23,6 +23,7 @@
 
 | נספח | פגשנו בגרסה |
 |---|---|
+| [גיבוי הפרויקט ב-Git וב-GitHub](https://github.com/ciznerguy/EmetGuard/releases/download/v1/appendix-git-backup.pdf) | 1 |
 | [למה צריך מחלקת בסיס (BaseEntity)](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) | 3 |
 | [Bootstrap לעומק, עם דוגמאות מהאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) | 4 |
 | [פביקון: מה זה, איך יוצרים ואיך מעלים לאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) | 4 |
