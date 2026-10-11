@@ -33,6 +33,6 @@
 
 סרטון קצר, בלי קול: הדף הראשי, מעבר בין הגרסאות, המדריך של כל גרסה והנספחים.
 
-https://github.com/user-attachments/assets/7aac4d11-3b40-4682-a469-d6ce2a9888ae
+https://github.com/user-attachments/assets/e67dbaf8-90ac-417f-8dd4-0d96cc923746
 
 </div>
