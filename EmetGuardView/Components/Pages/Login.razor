@@ -1,7 +1,12 @@
 @page "/login"
 
+@* נוסף בגרסה 4.
+   דף הכניסה. בשלב הזה הוא עיצוב בלבד: אין בו קוד, והוא לא פונה לשכבת השירות.
+   השורה הראשונה קובעת את הכתובת של הדף. *@
+
 <PageTitle>כניסה · EmetGuard</PageTitle>
 
+@* רשת של ספריית העיצוב: הכרטיס ממורכז, ורוחבו משתנה לפי גודל המסך *@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-7 col-lg-5">
@@ -11,11 +16,13 @@
                     <h1 class="h2 fw-bold">כניסה</h1>
                     <p class="text-secondary mb-4">היכנסו לחשבון כדי להצביע בשיעור.</p>
 
+                    @* הדפדפן לא בודק את השדות בעצמו. הבדיקה תיכתב בהמשך בקוד *@
                     <form novalidate>
+                        @* כל שדה נבנה מהרכיב המשותף של שדה טופס *@
                         <Field Id="login-username" Label="שם משתמש" Name="username" />
                         <Field Id="login-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" />
 
-                        @* type="button": בשלב הזה הכפתור לא שולח את הטופס. ההפעלה תיכתב בהמשך ב-C# *@
+                        @* בשלב הזה הכפתור לא שולח את הטופס. ההפעלה תיכתב בהמשך בקוד *@
                         <button class="btn btn-primary btn-lg w-100 mt-2" type="button">כניסה</button>
                     </form>
                 </div>

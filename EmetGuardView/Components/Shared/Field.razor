@@ -1,23 +1,31 @@
-@* שדה טופס: תווית ותיבת קלט של Bootstrap. כל שדה בטפסים נבנה מהרכיב הזה *@
+@* נוסף בגרסה 4.
+   שדה טופס: תווית ותיבת קלט בעיצוב של ספריית העיצוב. כל שדה בטפסים נבנה מהרכיב הזה.
+   במקום לכתוב את אותו קוד בכל שדה, כותבים אותו פעם אחת כאן, ומעבירים לרכיב רק את מה שמשתנה. *@
 
 <div class="mb-3">
+    @* התווית מקושרת לתיבת הקלט לפי המזהה. לחיצה על התווית מעבירה את הסמן לתיבה *@
     <label class="form-label fw-medium" for="@Id">
         @Label <span class="text-danger" aria-hidden="true">*</span>
     </label>
+    @* ערך שמתחיל בסימן @ נלקח מהפרמטרים שהדף העביר לרכיב *@
     <input class="form-control form-control-lg" id="@Id" name="@Name" type="@Type" dir="@Dir" required />
 </div>
 
 @code {
+    // הפרמטרים של הרכיב. הדף שמשתמש ברכיב מעביר אותם כמו תכונות של תגית
+
     // מזהה השדה, מקשר בין התווית לתיבת הקלט
     [Parameter] public string Id { get; set; } = "";
 
+    // הטקסט של התווית
     [Parameter] public string Label { get; set; } = "";
 
+    // שם השדה בטופס
     [Parameter] public string? Name { get; set; }
 
-    // text, email, password וכדומה
+    // סוג השדה: טקסט רגיל, אימייל, סיסמה וכדומה. ברירת המחדל היא טקסט רגיל
     [Parameter] public string Type { get; set; } = "text";
 
-    // ltr לשדות שמכילים אנגלית, כמו אימייל וסיסמה
+    // כיוון הכתיבה. משמאל לימין בשדות שמכילים אותיות לועזיות, כמו אימייל וסיסמה
     [Parameter] public string? Dir { get; set; }
 }

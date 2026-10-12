@@ -5,28 +5,35 @@ using Model;
 namespace EmetGuard.Controllers
 {
     /// <summary>
-    /// נקודות קצה לטבלת Users. כל פעולה מפעילה שאילתה אחת מ-UserDB
+    /// נוסף בגרסה 3.
+    /// נקודות הקצה של טבלת המשתמשים. כל פעולה מפעילה שאילתה אחת ממחלקת הגישה למשתמשים.
+    /// הבקר מקבל בקשה ברשת, קורא לשכבת הגישה לנתונים ומחזיר תשובה עם קוד מצב מתאים.
     /// </summary>
+    // השורות שבסוגריים מרובעים נותנות למחלקה הגדרות מיוחדות:
+    // הראשונה מסמנת שזה בקר של שכבת השירות, ומפעילה בדיקה אוטומטית של הבקשות שמגיעות אליו.
+    // השנייה קובעת את תחילת הכתובת של כל הפעולות בבקר. במקום הסוגריים נכנס שם המחלקה בלי המילה שבסוף השם
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly UserDB userDB;
 
-        // UserDB מגיע אוטומטית מהרישום ב-Program.cs
+        // מחלקת הגישה למשתמשים מגיעה אוטומטית מהרישום בקובץ ההפעלה.
+        // הבקר לא יוצר אותה בעצמו, ולכן גם לא צריך להכיר את מחרוזת החיבור
         public UsersController(UserDB userDB)
         {
             this.userDB = userDB;
         }
 
-        // GET api/users
+        // שליפת כל המשתמשים. מחזיר קוד 200 ואת הרשימה
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetAll()
         {
             return Ok(await userDB.GetAllUsersAsync());
         }
 
-        // GET api/users/5
+        // שליפת משתמש לפי מזהה. המזהה מגיע מסוף הכתובת וחייב להיות מספר שלם.
+        // מחזיר 404 אם המשתמש לא נמצא
         [HttpGet("{id:int}")]
         public async Task<ActionResult<User>> GetById(int id)
         {
@@ -34,32 +41,34 @@ namespace EmetGuard.Controllers
             return user == null ? NotFound() : Ok(user);
         }
 
-        // GET api/users/exists/admin
+        // בדיקה אם שם משתמש תפוס. מחזיר אמת או שקר
         [HttpGet("exists/{username}")]
         public async Task<ActionResult<bool>> UsernameExists(string username)
         {
             return Ok(await userDB.UsernameExistsAsync(username));
         }
 
-        // GET api/users/email-exists/admin@example.com
+        // בדיקה אם אימייל תפוס. מחזיר אמת או שקר
         [HttpGet("email-exists/{email}")]
         public async Task<ActionResult<bool>> EmailExists(string email)
         {
             return Ok(await userDB.EmailExistsAsync(email));
         }
 
-        // GET api/users/count-by-role
+        // ספירת המשתמשים בכל תפקיד
         [HttpGet("count-by-role")]
         public async Task<ActionResult<Dictionary<string, int>>> CountByRole()
         {
             return Ok(await userDB.CountUsersByRoleAsync());
         }
 
-        // POST api/users?roleName=Student
-        // גוף הבקשה: username, email, password
+        // הוספת משתמש חדש.
+        // פרטי המשתמש מגיעים בגוף הבקשה: שם משתמש, אימייל וסיסמה.
+        // שם התפקיד מגיע בכתובת, וברירת המחדל היא תלמיד
         [HttpPost]
         public async Task<ActionResult<User>> Add([FromBody] User user, [FromQuery] string roleName = "Student")
         {
+            // קוד 409: שם המשתמש או האימייל כבר תפוסים
             if (await userDB.UsernameExistsAsync(user.Username))
                 return Conflict("Username already exists.");
 
@@ -72,15 +81,16 @@ namespace EmetGuard.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                // תפקיד שלא קיים בטבלת Roles
+                // תפקיד שלא קיים בטבלת התפקידים: קוד 400, בקשה שגויה
                 return BadRequest(ex.Message);
             }
 
+            // קוד 201: המשתמש נוצר. התשובה כוללת את המשתמש ואת הכתובת שבה אפשר לשלוף אותו
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
-        // POST api/users/login
-        // גוף הבקשה: username, password
+        // התחברות. גוף הבקשה: שם משתמש וסיסמה.
+        // מחזיר את המשתמש אם הפרטים נכונים, וקוד 401 אם לא
         [HttpPost("login")]
         public async Task<ActionResult<User>> Login([FromBody] User credentials)
         {
@@ -88,23 +98,23 @@ namespace EmetGuard.Controllers
             return user == null ? Unauthorized() : Ok(user);
         }
 
-        // PUT api/users/5/role?roleName=Teacher
+        // שינוי תפקיד. שם התפקיד החדש מגיע בכתובת.
+        // קוד 204: העדכון הצליח ואין תוכן להחזיר
         [HttpPut("{id:int}/role")]
         public async Task<IActionResult> UpdateRole(int id, [FromQuery] string roleName)
         {
             return await userDB.UpdateUserRoleAsync(id, roleName) ? NoContent() : NotFound();
         }
 
-        // PUT api/users/5/password
-        // גוף הבקשה: הסיסמה החדשה כמחרוזת JSON, למשל "NewPass123"
+        // עדכון סיסמה. גוף הבקשה: הסיסמה החדשה כמחרוזת בין מירכאות
         [HttpPut("{id:int}/password")]
         public async Task<IActionResult> UpdatePassword(int id, [FromBody] string newPassword)
         {
             return await userDB.UpdatePasswordAsync(id, newPassword) ? NoContent() : NotFound();
         }
 
-        // PUT api/users/5/email
-        // גוף הבקשה: האימייל החדש כמחרוזת JSON
+        // עדכון אימייל. גוף הבקשה: האימייל החדש כמחרוזת בין מירכאות.
+        // קודם בודקים שהאימייל לא שייך למשתמש אחר
         [HttpPut("{id:int}/email")]
         public async Task<IActionResult> UpdateEmail(int id, [FromBody] string newEmail)
         {
@@ -114,7 +124,7 @@ namespace EmetGuard.Controllers
             return await userDB.UpdateEmailAsync(id, newEmail) ? NoContent() : NotFound();
         }
 
-        // DELETE api/users/5
+        // מחיקת משתמש לפי מזהה
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

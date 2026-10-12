@@ -1,7 +1,9 @@
 @inherits LayoutComponentBase
 
-@* המבנה של כל דפי האתר: סרגל עליון, תוכן הדף ותחתית *@
+@* נוצר בגרסה 1 מהתבנית, ונכתב מחדש בגרסה 4.
+   המבנה של כל דפי האתר: סרגל עליון, תוכן הדף ותחתית *@
 
+@* סרגל עליון שנשאר צמוד לראש המסך גם בגלילה: לוגו, ושני כפתורים לכניסה ולהרשמה *@
 <header class="topbar sticky-top">
     <div class="container d-flex align-items-center justify-content-between py-3">
         <Logo />
@@ -12,10 +14,12 @@
     </div>
 </header>
 
+@* כאן נכנס התוכן של הדף שהנתב בחר *@
 <main>
     @Body
 </main>
 
+@* תחתית האתר *@
 <footer class="py-4 text-secondary small">
     <div class="container d-flex flex-wrap justify-content-between gap-2">
         <span>EmetGuard · אמת או חובה</span>
@@ -23,6 +27,7 @@
     </div>
 </footer>
 
+@* הודעה שמופיעה בתחתית המסך כשקורית שגיאה לא צפויה. מוסתרת עד שיש שגיאה *@
 <div id="blazor-error-ui" data-nosnippet>
     אירעה שגיאה.
     <a href="." class="reload">רענון</a>
