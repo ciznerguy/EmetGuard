@@ -1,4 +1,7 @@
-// Set up event handlers
+// נוצר בגרסה 1 מהתבנית, ולא שונה.
+// הקוד של חלון החיבור מחדש: מגיב לניתוק מהשרת ומנסה להתחבר שוב.
+
+// חיבור הפעולות לאירועים: שינוי מצב החיבור, ולחיצה על הכפתורים שבחלון
 const reconnectModal = document.getElementById("components-reconnect-modal");
 reconnectModal.addEventListener("components-reconnect-state-changed", handleReconnectStateChanged);
 
@@ -24,14 +27,14 @@ async function retry() {
     document.removeEventListener("visibilitychange", retryWhenDocumentBecomesVisible);
 
     try {
-        // Reconnect will asynchronously return:
-        // - true to mean success
-        // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
-        // - exception to mean we didn't reach the server (this can be sync or async)
+        // ניסיון החיבור מחזיר, בצורה אסינכרונית:
+        // - אמת: החיבור הצליח
+        // - שקר: הגענו לשרת, אבל הוא דחה את החיבור (למשל, הוא כבר לא מכיר את החיבור הקודם)
+        // - חריגה: לא הצלחנו להגיע לשרת בכלל
         const successful = await Blazor.reconnect();
         if (!successful) {
-            // We have been able to reach the server, but the circuit is no longer available.
-            // We'll reload the page so the user can continue using the app as quickly as possible.
+            // הגענו לשרת, אבל החיבור הקודם כבר לא קיים.
+            // טוענים את הדף מחדש, כדי שהמשתמש יוכל להמשיך לעבוד כמה שיותר מהר
             const resumeSuccessful = await Blazor.resumeCircuit();
             if (!resumeSuccessful) {
                 location.reload();
@@ -40,7 +43,7 @@ async function retry() {
             }
         }
     } catch (err) {
-        // We got an exception, server is currently unavailable
+        // נזרקה חריגה: השרת לא זמין כרגע
         document.addEventListener("visibilitychange", retryWhenDocumentBecomesVisible);
     }
 }

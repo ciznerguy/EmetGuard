@@ -5,13 +5,20 @@ using MySql.Data.MySqlClient;
 namespace DAL
 {
     /// <summary>
-    /// כל השאילתות מול טבלת Users
+    /// נוסף בגרסה 3.
+    /// כל השאילתות מול טבלת המשתמשים נמצאות כאן, ורק כאן.
+    /// שכבת השירות לא כותבת שאילתות בעצמה: היא קוראת לפעולות של המחלקה הזו.
+    /// כל פעולה פותחת חיבור משלה, מריצה שאילתה אחת וסוגרת את החיבור.
+    /// כל הערכים שמגיעים מהמשתמש מועברים כפרמטרים, ולא מודבקים לתוך טקסט השאילתה.
+    /// כך המשתמש לא יכול להחדיר פקודות משלו לבסיס הנתונים.
     /// </summary>
     public class UserDB
     {
+        // מחרוזת החיבור לבסיס הנתונים. מתקבלת פעם אחת בבנאי ולא משתנה
         private readonly string connectionString;
 
-        // שליפה משותפת לכל הפעולות שמחזירות משתמש: Users יחד עם שם התפקיד מטבלת Roles
+        // שליפה משותפת לכל הפעולות שמחזירות משתמש:
+        // טבלת המשתמשים מצורפת לטבלת התפקידים, כדי לקבל גם את שם התפקיד ולא רק את המזהה שלו
         private const string SelectUserSql = @"
             SELECT u.UserID, u.Username, u.Email, u.PasswordHash, u.RoleID, r.RoleName, u.CreatedAt
             FROM Users u
@@ -24,11 +31,13 @@ namespace DAL
         }
 
         /// <summary>
-        /// הוספת משתמש חדש. ה-RoleID נמצא לפי שם התפקיד
+        /// הוספת משתמש חדש. מזהה התפקיד נמצא לפי שם התפקיד
         /// </summary>
-        /// <returns>המזהה (UserID) שבסיס הנתונים נתן למשתמש החדש</returns>
+        /// <returns>המזהה שבסיס הנתונים נתן למשתמש החדש</returns>
         public async Task<int> AddUserAsync(User user, string roleName = "Student")
         {
+            // ההוספה והחיפוש של מזהה התפקיד נעשים בשאילתה אחת:
+            // הערכים של המשתמש נלקחים מהפרמטרים, ומזהה התפקיד נלקח מטבלת התפקידים
             string sql = @"
                 INSERT INTO Users (Username, Email, PasswordHash, RoleID)
                 SELECT @Username, @Email, @Password, RoleID
@@ -43,12 +52,14 @@ namespace DAL
             command.Parameters.AddWithValue("@Password", user.Password);
             command.Parameters.AddWithValue("@RoleName", roleName);
 
+            // הפקודה מחזירה את מספר השורות שנוספו
             int rows = await command.ExecuteNonQueryAsync();
 
-            // אם התפקיד לא קיים בטבלת Roles, לא נוספה אף שורה
+            // אם התפקיד לא קיים בטבלת התפקידים, לא נוספה אף שורה
             if (rows == 0)
                 throw new InvalidOperationException($"Role '{roleName}' not found.");
 
+            // המזהה שבסיס הנתונים יצר לשורה החדשה נשמר בתוך העצם ומוחזר
             user.Id = (int)command.LastInsertedId;
             return user.Id;
         }
@@ -58,6 +69,7 @@ namespace DAL
         /// </summary>
         public async Task<bool> UsernameExistsAsync(string username)
         {
+            // השאילתה מחזירה 1 אם נמצאה לפחות שורה אחת, ו-0 אם לא
             string sql = "SELECT EXISTS(SELECT 1 FROM Users WHERE Username = @Username);";
 
             using var connection = new MySqlConnection(connectionString);
@@ -86,7 +98,7 @@ namespace DAL
         /// <summary>
         /// בדיקת התחברות
         /// </summary>
-        /// <returns>המשתמש אם השם והסיסמה נכונים, אחרת null</returns>
+        /// <returns>המשתמש אם השם והסיסמה נכונים, אחרת ערך ריק</returns>
         public async Task<User?> CheckLoginAsync(string username, string password)
         {
             string sql = SelectUserSql + " WHERE u.Username = @Username;";
@@ -96,20 +108,22 @@ namespace DAL
             using var command = new MySqlCommand(sql, connection);
             command.Parameters.AddWithValue("@Username", username);
 
+            // קורא התוצאות עובר על השורות שחזרו, שורה אחרי שורה.
+            // אם אין אף שורה, שם המשתמש לא קיים
             using var reader = await command.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
                 return null;
 
             User user = ReadUser(reader);
 
-            // ההשוואה נעשית ב-C# ולא ב-SQL, כי MySQL משווה מחרוזות בלי הבדל בין אותיות גדולות לקטנות
+            // ההשוואה נעשית בקוד ולא בשאילתה, כי בסיס הנתונים משווה מחרוזות בלי הבדל בין אותיות גדולות לקטנות
             return user.Password == password ? user : null;
         }
 
         /// <summary>
         /// שליפת משתמש לפי מזהה
         /// </summary>
-        /// <returns>המשתמש, או null אם לא נמצא</returns>
+        /// <returns>המשתמש, או ערך ריק אם לא נמצא</returns>
         public async Task<User?> GetUserByIdAsync(int userId)
         {
             string sql = SelectUserSql + " WHERE u.UserID = @UserID;";
@@ -134,6 +148,7 @@ namespace DAL
             await connection.OpenAsync();
             using var command = new MySqlCommand(sql, connection);
 
+            // כל שורה שחוזרת הופכת לעצם משתמש ונוספת לרשימה
             var users = new List<User>();
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -143,11 +158,13 @@ namespace DAL
         }
 
         /// <summary>
-        /// ספירת משתמשים לכל תפקיד. LEFT JOIN כדי שגם תפקיד בלי משתמשים יופיע עם 0
+        /// ספירת משתמשים לכל תפקיד.
+        /// הצירוף נעשה מצד טבלת התפקידים, כך שגם תפקיד בלי משתמשים יופיע, עם 0
         /// </summary>
         /// <returns>מילון: שם התפקיד ומספר המשתמשים בו</returns>
         public async Task<Dictionary<string, int>> CountUsersByRoleAsync()
         {
+            // קיבוץ לפי תפקיד, וספירה של המשתמשים בכל קבוצה
             string sql = @"
                 SELECT r.RoleName, COUNT(u.UserID) AS UserCount
                 FROM Roles r
@@ -159,6 +176,7 @@ namespace DAL
             await connection.OpenAsync();
             using var command = new MySqlCommand(sql, connection);
 
+            // המפתח במילון הוא שם התפקיד, והערך הוא מספר המשתמשים
             var counts = new Dictionary<string, int>();
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -170,9 +188,10 @@ namespace DAL
         /// <summary>
         /// שינוי תפקיד של משתמש, לפי שם התפקיד החדש
         /// </summary>
-        /// <returns>true אם המשתמש והתפקיד נמצאו</returns>
+        /// <returns>אמת אם המשתמש והתפקיד נמצאו</returns>
         public async Task<bool> UpdateUserRoleAsync(int userId, string roleName)
         {
+            // עדכון עם צירוף: מזהה התפקיד החדש נלקח מטבלת התפקידים לפי השם שלו
             string sql = @"
                 UPDATE Users u
                 INNER JOIN Roles r ON r.RoleName = @RoleName
@@ -185,13 +204,14 @@ namespace DAL
             command.Parameters.AddWithValue("@RoleName", roleName);
             command.Parameters.AddWithValue("@UserID", userId);
 
+            // אם לא עודכנה אף שורה, המשתמש או התפקיד לא נמצאו
             return await command.ExecuteNonQueryAsync() > 0;
         }
 
         /// <summary>
         /// עדכון סיסמה
         /// </summary>
-        /// <returns>true אם המשתמש נמצא</returns>
+        /// <returns>אמת אם המשתמש נמצא</returns>
         public async Task<bool> UpdatePasswordAsync(int userId, string newPassword)
         {
             string sql = "UPDATE Users SET PasswordHash = @Password WHERE UserID = @UserID;";
@@ -206,9 +226,9 @@ namespace DAL
         }
 
         /// <summary>
-        /// עדכון אימייל. אם האימייל כבר שייך למשתמש אחר, MySQL יזרוק שגיאה כי העמודה מוגדרת UNIQUE
+        /// עדכון אימייל. אם האימייל כבר שייך למשתמש אחר, בסיס הנתונים יזרוק שגיאה, כי העמודה מוגדרת ייחודית
         /// </summary>
-        /// <returns>true אם המשתמש נמצא</returns>
+        /// <returns>אמת אם המשתמש נמצא</returns>
         public async Task<bool> UpdateEmailAsync(int userId, string newEmail)
         {
             string sql = "UPDATE Users SET Email = @Email WHERE UserID = @UserID;";
@@ -223,9 +243,9 @@ namespace DAL
         }
 
         /// <summary>
-        /// מחיקת משתמש. מורה שיצר שיעורים לא יימחק, כי Lessons מוגדר עם ON DELETE RESTRICT
+        /// מחיקת משתמש. מורה שיצר שיעורים לא יימחק, כי טבלת השיעורים מוגדרת עם מניעת מחיקה
         /// </summary>
-        /// <returns>true אם המשתמש נמחק</returns>
+        /// <returns>אמת אם המשתמש נמחק</returns>
         public async Task<bool> DeleteUserAsync(int userId)
         {
             string sql = "DELETE FROM Users WHERE UserID = @UserID;";
@@ -238,9 +258,11 @@ namespace DAL
             return await command.ExecuteNonQueryAsync() > 0;
         }
 
-        // הופך שורה מהשליפה המשותפת לאובייקט User
+        // הופך שורה מהשליפה המשותפת לעצם משתמש.
+        // הפעולה משותפת לכל השליפות, כדי שקריאת העמודות תיכתב פעם אחת בלבד
         private static User ReadUser(DbDataReader reader)
         {
+            // מועד ההרשמה יכול להיות ריק, ולכן בודקים אותו לפני הקריאה
             int createdAtIndex = reader.GetOrdinal("CreatedAt");
 
             return new User(
