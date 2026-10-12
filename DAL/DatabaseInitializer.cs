@@ -1,10 +1,18 @@
-﻿using System.Data;
+using System.Data;
 using MySql.Data.MySqlClient;
 
 namespace DAL
 {
+    /// <summary>
+    /// נוסף בגרסה 2.
+    /// מחלקה שאחראית להכין את בסיס הנתונים לפני שהמערכת מתחילה לעבוד.
+    /// היא נקראת פעם אחת, כשהשרת עולה, ויוצרת את בסיס הנתונים, את הטבלאות ואת נתוני הפתיחה.
+    /// אפשר להריץ אותה שוב ושוב בלי נזק: בכל שלב נוצר רק מה שעוד לא קיים.
+    /// המחלקה סטטית, כי אין לה מצב משלה ואין צורך ליצור ממנה עצמים.
+    /// </summary>
     public static class DatabaseInitializer
     {
+        // שם בסיס הנתונים מוגדר במקום אחד בלבד, כדי שכל הפעולות ישתמשו באותו שם
         private const string DatabaseName = "EmetGuardDB";
 
         /// <summary>
@@ -22,23 +30,52 @@ namespace DAL
             // שלב ב': יצירת הטבלאות
             await CreateTablesAsync(dbConnectionString);
 
-            // שלב ג': הכנסת נתוני ברירת מחדל לטבלת התפקידים (Roles)
+            // שלב ג': הכנסת נתוני ברירת מחדל לטבלת התפקידים
             await SeedRolesAsync(dbConnectionString);
         }
 
+        /// <summary>
+        /// יוצרת את בסיס הנתונים עצמו, אם הוא עוד לא קיים.
+        /// </summary>
         private static async Task CreateDatabaseAsync(string serverConnectionString)
         {
+            // הקידוד שנבחר תומך בכל השפות, כולל עברית וסמלים מיוחדים,
+            // וכלל המיון שנבחר משווה טקסט בלי להבדיל בין אותיות גדולות לקטנות
             string sql = $"CREATE DATABASE IF NOT EXISTS `{DatabaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
 
+            // מתחברים לשרת בלי לציין בסיס נתונים, כי בשלב הזה הוא אולי עוד לא קיים.
+            // החיבור והפקודה נסגרים אוטומטית בסוף הפעולה, גם אם נזרקה חריגה
             using var connection = new MySqlConnection(serverConnectionString);
             await connection.OpenAsync();
             using var command = new MySqlCommand(sql, connection);
+
+            // הרצת פקודה שלא מחזירה נתונים, אלא רק משנה את מבנה השרת
             await command.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// יוצרת את שבע הטבלאות של המערכת, אם הן עוד לא קיימות.
+        /// </summary>
         private static async Task CreateTablesAsync(string dbConnectionString)
         {
-            // שאילתת DDL המגדירה את 7 הטבלאות, מפתחות ראשיים, זרים וערכי ברירת מחדל
+            // שאילתה אחת שמגדירה את מבנה שבע הטבלאות: מפתחות ראשיים, מפתחות זרים וערכי ברירת מחדל.
+            // סדר היצירה חשוב: טבלה שמפנה לטבלה אחרת חייבת להיווצר אחריה.
+            //
+            // הטבלאות לפי הסדר:
+            // 1. טבלת התפקידים: מנהל, מורה ותלמיד.
+            // 2. טבלת המשתמשים: כל משתמש שייך לתפקיד אחד. שם המשתמש והדואר האלקטרוני ייחודיים.
+            // 3. טבלת הקטגוריות: נושאי הידיעות.
+            // 4. טבלת השיעורים: כל שיעור מציג ידיעה אחת, שייך למורה אחד ולקטגוריה אחת.
+            //    בשיעור נשמר אם ההצבעה פתוחה ומה המסקנה הסופית.
+            // 5. טבלת הראיות: ראיות שתלמידים מגישים בעד הידיעה או נגדה, עם סטטוס בדיקה.
+            // 6. טבלת ההצבעות: כל הצבעה שייכת לשיעור. מצביע יכול להיות משתמש רשום או אורח.
+            // 7. טבלת הנוכחות בשיעור: טבלה מקשרת בין שיעורים למשתמשים (קשר של רבים לרבים).
+            //    המפתח הראשי שלה מורכב משני שדות, כך שמשתמש לא יכול להצטרף לאותו שיעור פעמיים.
+            //
+            // מה קורה למפתח זר כשמוחקים את השורה שהוא מפנה אליה:
+            // - מניעת מחיקה: אי אפשר למחוק תפקיד, קטגוריה או מורה שיש שורות שתלויות בהם.
+            // - מחיקה מדורגת: מחיקת שיעור מוחקת איתו את הראיות, ההצבעות והנוכחות שלו.
+            // - איפוס לריק: מחיקת משתמש משאירה את ההצבעה שלו, בלי לדעת מי הצביע.
             string createTablesSql = @"
                 CREATE TABLE IF NOT EXISTS Roles (
                     RoleID INT AUTO_INCREMENT PRIMARY KEY,
@@ -108,12 +145,16 @@ namespace DAL
                 ) ENGINE=InnoDB;
             ";
 
+            // כאן כבר מתחברים לבסיס הנתונים עצמו, ומריצים את כל פקודות היצירה בבת אחת
             using var connection = new MySqlConnection(dbConnectionString);
             await connection.OpenAsync();
             using var command = new MySqlCommand(createTablesSql, connection);
             await command.ExecuteNonQueryAsync();
         }
 
+        /// <summary>
+        /// מכניסה לטבלת התפקידים את שלושת התפקידים הקבועים של המערכת.
+        /// </summary>
         private static async Task SeedRolesAsync(string dbConnectionString)
         {
             using var connection = new MySqlConnection(dbConnectionString);
@@ -122,12 +163,16 @@ namespace DAL
             // בדיקה אם הטבלה ריקה לפני הכנסת נתוני ברירת המחדל
             string checkSql = "SELECT COUNT(*) FROM Roles;";
             using var checkCmd = new MySqlCommand(checkSql, connection);
+
+            // הפקודה מחזירה ערך בודד, מספר השורות, ומשם ממירים אותו למספר שלם
             long count = Convert.ToInt64(await checkCmd.ExecuteScalarAsync());
 
+            // מכניסים את התפקידים רק בהפעלה הראשונה.
+            // בלי הבדיקה, כל עלייה של השרת הייתה מנסה להכניס אותם שוב
             if (count == 0)
             {
                 string insertRolesSql = @"
-                    INSERT INTO Roles (RoleName) VALUES 
+                    INSERT INTO Roles (RoleName) VALUES
                     ('Admin'),
                     ('Teacher'),
                     ('Student');

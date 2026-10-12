@@ -1,6 +1,10 @@
 ﻿@page "/Error"
 @using System.Diagnostics
 
+@* נוצר בגרסה 1 מהתבנית, ולא שונה.
+   דף השגיאה: מוצג מחוץ לסביבת הפיתוח כשקורית שגיאה לא צפויה בשרת.
+   הוא מציג מספר מזהה של הבקשה, כדי שאפשר יהיה למצוא אותה ביומן השרת. *@
+
 <PageTitle>Error</PageTitle>
 
 <h1 class="text-danger">Error.</h1>
@@ -25,12 +29,14 @@
 </p>
 
 @code{
+    // פרטי הבקשה הנוכחית, מגיעים אוטומטית מהשרת
     [CascadingParameter]
     private HttpContext? HttpContext { get; set; }
 
     private string? RequestId { get; set; }
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
+    // נקרא כשהדף נוצר: לוקח את מזהה הפעולה הנוכחית, ואם אין, את מזהה הבקשה
     protected override void OnInitialized() =>
         RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
 }

@@ -1,3 +1,5 @@
+/* נוצר בגרסה 1 מהתבנית. העיצוב של התפריט שבצד.
+   העיצוב חל רק על הרכיב שהקובץ צמוד אליו */
 .navbar-toggler {
     appearance: none;
     cursor: pointer;
@@ -95,10 +97,10 @@
     }
 
     .nav-scrollable {
-        /* Never collapse the sidebar for wide screens */
+        /* במסך רחב התפריט תמיד פתוח */
         display: block;
 
-        /* Allow sidebar to scroll for tall menus */
+        /* אם התפריט ארוך מגובה המסך, אפשר לגלול בתוכו */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }

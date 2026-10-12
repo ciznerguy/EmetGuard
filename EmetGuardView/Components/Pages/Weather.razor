@@ -1,5 +1,9 @@
-﻿@page "/weather"
+@page "/weather"
 @attribute [StreamRendering]
+
+
+@* נוצר בגרסה 1 מהתבנית, כדוגמה לדף שמציג רשימת נתונים בטבלה.
+   השורה השנייה גורמת לדף להופיע מיד, ולהשלים את הטבלה כשהנתונים מוכנים. הנתונים מומצאים *@
 
 <PageTitle>Weather</PageTitle>
 
@@ -7,6 +11,7 @@
 
 <p>This component demonstrates showing data.</p>
 
+@* כל עוד אין נתונים, מוצגת הודעת טעינה *@
 @if (forecasts == null)
 {
     <p><em>Loading...</em></p>
@@ -37,11 +42,13 @@ else
 }
 
 @code {
+    // מערך התחזיות. ריק עד שהטעינה מסתיימת
     private WeatherForecast[]? forecasts;
 
+    // נקרא פעם אחת כשהדף נוצר: מכין חמש תחזיות מומצאות
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate streaming rendering
+        // המתנה מלאכותית של חצי שנייה, כדי להראות איך הדף מופיע לפני שהנתונים מוכנים
         await Task.Delay(500);
 
         var startDate = DateOnly.FromDateTime(DateTime.Now);
@@ -54,6 +61,7 @@ else
         }).ToArray();
     }
 
+    // מחלקה פנימית שמתארת תחזית אחת
     private class WeatherForecast
     {
         public DateOnly Date { get; set; }
