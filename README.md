@@ -25,7 +25,9 @@
 |---|---|
 | [גיבוי הפרויקט ב-Git וב-GitHub](https://github.com/ciznerguy/EmetGuard/releases/download/v1/appendix-git-backup.pdf) | 1 |
 | [סרטון: איך עובדים עם הגיט של EmetGuard](#סרטון-איך-עובדים-עם-הגיט-של-emetguard) | 1 |
+| [המחלקה DatabaseInitializer: אתחול בסיס הנתונים](https://github.com/ciznerguy/EmetGuard/releases/download/v2/v2-appendix-database-initializer.pdf) | 2 |
 | [למה צריך מחלקת בסיס (BaseEntity)](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) | 3 |
+| [תכונות ב-C#: get ו-set, ולמה לא ויתרנו על הכימוס](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-appendix-properties.pdf) | 3 |
 | [Bootstrap לעומק, עם דוגמאות מהאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) | 4 |
 | [פביקון: מה זה, איך יוצרים ואיך מעלים לאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) | 4 |
 
