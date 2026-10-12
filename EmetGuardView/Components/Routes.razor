@@ -1,6 +1,11 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+@* נוצר בגרסה 1 מהתבנית.
+   הנתב: בודק את הכתובת שבדפדפן ומציג את הדף שמוגדר עבורה בשורת הכתובת שבראש הדף.
+   כתובת שאין לה דף מציגה את הדף "לא נמצא". *@
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
     <Found Context="routeData">
+        @* כל דף מוצג בתוך המבנה הכללי של האתר: סרגל עליון, תוכן ותחתית *@
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        @* אחרי מעבר דף, הסמן עובר לכותרת הראשית. זה עוזר למשתמשים בקורא מסך *@
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>

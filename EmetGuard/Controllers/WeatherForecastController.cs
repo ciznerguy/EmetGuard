@@ -1,3 +1,5 @@
+// נוצר בגרסה 1 מהתבנית של שכבת השירות, כדוגמה לבקר.
+// הבקר לא משמש את הפרויקט. אפשר להשוות אליו את בקר המשתמשים.
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmetGuard.Controllers

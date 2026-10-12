@@ -1,5 +1,9 @@
-﻿@page "/counter"
+@page "/counter"
 @rendermode InteractiveServer
+
+
+@* נוצר בגרסה 1 מהתבנית, כדוגמה לדף עם אירוע.
+   השורה השנייה קובעת שהדף רץ בשרת ומגיב ללחיצות. כל לחיצה על הכפתור מגדילה את המונה, והדף מתעדכן לבד *@
 
 <PageTitle>Counter</PageTitle>
 
@@ -10,8 +14,10 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
+    // הערך הנוכחי של המונה
     private int currentCount = 0;
 
+    // הפעולה שנקראת בכל לחיצה על הכפתור
     private void IncrementCount()
     {
         currentCount++;
