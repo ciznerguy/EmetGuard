@@ -1,8 +1,13 @@
+# קובץ בדיקות לנקודות הקצה של שכבת השירות. נוסף בגרסה 1, והבקשות של המשתמשים נוספו בגרסה 3.
+# מריצים את שכבת השירות, ואז לוחצים על הקישור שמופיע מעל כל בקשה כדי לשלוח אותה.
+# הסימן ### מפריד בין בקשה לבקשה.
+
+# הכתובת של השרת. כל הבקשות בקובץ משתמשות במשתנה הזה
 @EmetGuard_HostAddress = http://localhost:5214
 
 ###
 
-# ===== Users =====
+# ===== משתמשים =====
 
 # כל המשתמשים
 GET {{EmetGuard_HostAddress}}/api/users
@@ -16,17 +21,17 @@ Accept: application/json
 
 ###
 
-# האם שם משתמש קיים (צפוי: true)
+# האם שם משתמש קיים (צפוי: אמת)
 GET {{EmetGuard_HostAddress}}/api/users/exists/admin
 
 ###
 
-# האם שם משתמש קיים (צפוי: true)
+# האם שם משתמש קיים (צפוי: אמת)
 GET {{EmetGuard_HostAddress}}/api/users/exists/dana.cohen
 
 ###
 
-# האם אימייל קיים (צפוי: true)
+# האם אימייל קיים (צפוי: אמת)
 GET {{EmetGuard_HostAddress}}/api/users/email-exists/admin@example.com
 
 ###
@@ -36,7 +41,8 @@ GET {{EmetGuard_HostAddress}}/api/users/count-by-role
 
 ###
 
-# הוספת משתמש בדיקה (תפקיד ברירת מחדל: Student)
+# הוספת משתמש בדיקה (תפקיד ברירת מחדל: תלמיד)
+# גוף הבקשה כתוב בפורמט שהשרת יודע להמיר אוטומטית לעצם משתמש: שם השדה, נקודתיים והערך
 POST {{EmetGuard_HostAddress}}/api/users
 Content-Type: application/json
 

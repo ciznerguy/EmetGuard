@@ -1,29 +1,37 @@
 ﻿<!DOCTYPE html>
 <html lang="he" dir="rtl">
 
+@* נוצר בגרסה 1 מהתבנית. בגרסה 4 הוגדר כדף בעברית, ונוספו הגופנים, קובץ העיצוב וסמל האתר.
+   זה דף האם של האתר: כל הדפים נטענים לתוכו. כאן נקבעים השפה, הכיוון והקבצים שנטענים בכל דף. *@
+
 <head>
     <meta charset="utf-8" />
+    @* התאמה לרוחב המסך, כדי שהאתר ייראה טוב גם בטלפון *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <ResourcePreloader />
-    @* Bootstrap בגרסה לעברית (מימין לשמאל) *@
+    @* ספריית העיצוב בגרסה לעברית (מימין לשמאל) *@
     <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.rtl.min.css"]" />
     <link rel="stylesheet" href="@Assets["app.css"]" />
-    @* הגופנים והעיצוב של EmetGuard *@
+    @* הגופנים והעיצוב של האתר. קובץ העיצוב שלנו נטען אחרי ספריית העיצוב, כדי לגבור עליה *@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;600;700&display=swap" />
     <link rel="stylesheet" href="@Assets["css/site.css"]" />
     <link rel="stylesheet" href="@Assets["EmetGuardView.styles.css"]" />
     <ImportMap />
+    @* סמל האתר בלשונית הדפדפן. הדפדפן בוחר את הראשון שהוא יודע להציג *@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
 </head>
 
 <body>
+    @* הרכיב שבוחר איזה דף להציג לפי הכתובת *@
     <Routes />
+    @* חלון שמופיע כשהחיבור לשרת נקטע *@
     <ReconnectModal />
+    @* הקוד שמחבר את הדפדפן לשרת ומעדכן את הדף *@
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
