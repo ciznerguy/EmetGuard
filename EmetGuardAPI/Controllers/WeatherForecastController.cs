@@ -2,7 +2,7 @@
 // הבקר לא משמש את הפרויקט. אפשר להשוות אליו את בקר המשתמשים.
 using Microsoft.AspNetCore.Mvc;
 
-namespace EmetGuard.Controllers
+namespace EmetGuardAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

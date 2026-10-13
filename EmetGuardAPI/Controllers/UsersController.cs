@@ -2,7 +2,7 @@ using DAL;
 using Microsoft.AspNetCore.Mvc;
 using Model;
 
-namespace EmetGuard.Controllers
+namespace EmetGuardAPI.Controllers
 {
     /// <summary>
     /// נוסף בגרסה 3.

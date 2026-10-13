@@ -3,47 +3,47 @@
 # הסימן ### מפריד בין בקשה לבקשה.
 
 # הכתובת של השרת. כל הבקשות בקובץ משתמשות במשתנה הזה
-@EmetGuard_HostAddress = http://localhost:5214
+@EmetGuardAPI_HostAddress = http://localhost:5214
 
 ###
 
 # ===== משתמשים =====
 
 # כל המשתמשים
-GET {{EmetGuard_HostAddress}}/api/users
+GET {{EmetGuardAPI_HostAddress}}/api/users
 Accept: application/json
 
 ###
 
 # משתמש לפי מזהה
-GET {{EmetGuard_HostAddress}}/api/users/1
+GET {{EmetGuardAPI_HostAddress}}/api/users/1
 Accept: application/json
 
 ###
 
 # האם שם משתמש קיים (צפוי: אמת)
-GET {{EmetGuard_HostAddress}}/api/users/exists/admin
+GET {{EmetGuardAPI_HostAddress}}/api/users/exists/admin
 
 ###
 
 # האם שם משתמש קיים (צפוי: אמת)
-GET {{EmetGuard_HostAddress}}/api/users/exists/dana.cohen
+GET {{EmetGuardAPI_HostAddress}}/api/users/exists/dana.cohen
 
 ###
 
 # האם אימייל קיים (צפוי: אמת)
-GET {{EmetGuard_HostAddress}}/api/users/email-exists/admin@example.com
+GET {{EmetGuardAPI_HostAddress}}/api/users/email-exists/admin@example.com
 
 ###
 
 # ספירת משתמשים לפי תפקיד
-GET {{EmetGuard_HostAddress}}/api/users/count-by-role
+GET {{EmetGuardAPI_HostAddress}}/api/users/count-by-role
 
 ###
 
 # הוספת משתמש בדיקה (תפקיד ברירת מחדל: תלמיד)
 # גוף הבקשה כתוב בפורמט שהשרת יודע להמיר אוטומטית לעצם משתמש: שם השדה, נקודתיים והערך
-POST {{EmetGuard_HostAddress}}/api/users
+POST {{EmetGuardAPI_HostAddress}}/api/users
 Content-Type: application/json
 
 {
@@ -55,7 +55,7 @@ Content-Type: application/json
 ###
 
 # התחברות עם פרטים נכונים (צפוי: 200 והמשתמש)
-POST {{EmetGuard_HostAddress}}/api/users/login
+POST {{EmetGuardAPI_HostAddress}}/api/users/login
 Content-Type: application/json
 
 {
@@ -66,7 +66,7 @@ Content-Type: application/json
 ###
 
 # התחברות עם סיסמה שגויה (צפוי: 401)
-POST {{EmetGuard_HostAddress}}/api/users/login
+POST {{EmetGuardAPI_HostAddress}}/api/users/login
 Content-Type: application/json
 
 {
@@ -80,12 +80,12 @@ Content-Type: application/json
 # לפני ההרצה, להחליף את 11 במזהה שהוחזר בהוספת המשתמש.
 
 # שינוי תפקיד
-PUT {{EmetGuard_HostAddress}}/api/users/11/role?roleName=Teacher
+PUT {{EmetGuardAPI_HostAddress}}/api/users/11/role?roleName=Teacher
 
 ###
 
 # עדכון סיסמה
-PUT {{EmetGuard_HostAddress}}/api/users/11/password
+PUT {{EmetGuardAPI_HostAddress}}/api/users/11/password
 Content-Type: application/json
 
 "NewPass123"
@@ -93,7 +93,7 @@ Content-Type: application/json
 ###
 
 # עדכון אימייל
-PUT {{EmetGuard_HostAddress}}/api/users/11/email
+PUT {{EmetGuardAPI_HostAddress}}/api/users/11/email
 Content-Type: application/json
 
 "new.test.user@example.com"
@@ -101,6 +101,6 @@ Content-Type: application/json
 ###
 
 # מחיקת משתמש הבדיקה
-DELETE {{EmetGuard_HostAddress}}/api/users/11
+DELETE {{EmetGuardAPI_HostAddress}}/api/users/11
 
 ###

@@ -1,6 +1,6 @@
 // נוצר בגרסה 1 מהתבנית של שכבת השירות, כדוגמה בלבד.
 // המחלקה לא משמשת את הפרויקט.
-namespace EmetGuard
+namespace EmetGuardAPI
 {
     public class WeatherForecast
     {

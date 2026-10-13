@@ -1,6 +1,6 @@
 // נקודת הכניסה של שכבת השירות.
 // נוצר בגרסה 1 מהתבנית, בגרסה 2 נוסף אתחול בסיס הנתונים, ובגרסה 3 נוסף רישום מחלקת הגישה למשתמשים.
-namespace EmetGuard
+namespace EmetGuardAPI
 {
     public class Program
     {
