@@ -14,6 +14,7 @@
 | 2 | יצירה של בסיס הנתונים והטבלאות | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v2) | [מדריך חיבור לבסיס הנתונים](https://github.com/ciznerguy/EmetGuard/releases/download/v2/v2-database-connection-guide.pdf) |
 | 3 | מחלקות Model, שאילתות משתמשים ב-DAL ו-endpoints ב-API | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v3) | [מדריך גישה לטבלת המשתמשים](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-users-table-guide.pdf) |
 | 4 | דף בית, דף הרשמה ודף כניסה בעיצוב Bootstrap | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v4) | [מדריך דף בית, הרשמה וכניסה](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) |
+| 5 | הפעלת דף ההרשמה: בדיקה שהמשתמש לא קיים ושמירה בבסיס הנתונים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v5) | [מדריך הפעלת דף ההרשמה](https://github.com/ciznerguy/EmetGuard/releases/download/v5/v5-register-logic-guide.pdf) |
 
 אפשר גם להוריד כל גרסה כקובץ zip מדף ה-[Releases](https://github.com/ciznerguy/EmetGuard/releases).
 
