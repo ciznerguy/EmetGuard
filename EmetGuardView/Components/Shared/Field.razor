@@ -1,4 +1,4 @@
-@* נוסף בגרסה 4.
+@* נוסף בגרסה 4. בגרסה 5 נוסף חיבור דו כיווני בין השדה למשתנה בדף.
    שדה טופס: תווית ותיבת קלט בעיצוב של ספריית העיצוב. כל שדה בטפסים נבנה מהרכיב הזה.
    במקום לכתוב את אותו קוד בכל שדה, כותבים אותו פעם אחת כאן, ומעבירים לרכיב רק את מה שמשתנה. *@
 
@@ -7,8 +7,10 @@
     <label class="form-label fw-medium" for="@Id">
         @Label <span class="text-danger" aria-hidden="true">*</span>
     </label>
-    @* ערך שמתחיל בסימן @ נלקח מהפרמטרים שהדף העביר לרכיב *@
-    <input class="form-control form-control-lg" id="@Id" name="@Name" type="@Type" dir="@Dir" required />
+    @* ערך שמתחיל בסימן @ נלקח מהפרמטרים שהדף העביר לרכיב.
+       התיבה מציגה את הערך שקיבלה מהדף, וכשהמשתמש משנה אותו ויוצא מהשדה, הערך החדש נשלח בחזרה לדף *@
+    <input class="form-control form-control-lg" id="@Id" name="@Name" type="@Type" dir="@Dir" required
+           value="@Value" @onchange="OnValueChanged" />
 </div>
 
 @code {
@@ -28,4 +30,15 @@
 
     // כיוון הכתיבה. משמאל לימין בשדות שמכילים אותיות לועזיות, כמו אימייל וסיסמה
     [Parameter] public string? Dir { get; set; }
+
+    // נוסף בגרסה 5: הערך שבתיבה.
+    // שני הפרמטרים האלה יחד מאפשרים לדף לקשר את השדה למשתנה שלו בקישור דו כיווני.
+    // דף שלא מעביר אותם, כמו דף הכניסה, ממשיך לעבוד כמו קודם
+    [Parameter] public string? Value { get; set; }
+
+    // הפעולה של הדף שמקבלת את הערך החדש
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    // נקראת כשהמשתמש שינה את הערך ויצא מהשדה, ומעבירה את הערך החדש לדף
+    private Task OnValueChanged(ChangeEventArgs e) => ValueChanged.InvokeAsync(e.Value?.ToString());
 }

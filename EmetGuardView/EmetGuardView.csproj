@@ -8,4 +8,8 @@
     <UserSecretsId>30353371-50b5-418c-a1a6-3c7eaf390070</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
 </Project>

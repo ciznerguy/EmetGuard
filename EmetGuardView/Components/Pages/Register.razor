@@ -1,8 +1,19 @@
 @page "/register"
+@rendermode InteractiveServer
+@using System.Net.Mail
+@using Model
+@using EmetGuardView.Services
+@inject UserApiClient UserApi
+@inject NavigationManager Navigation
 
-@* נוסף בגרסה 4.
-   דף ההרשמה. בשלב הזה הוא עיצוב בלבד: אין בו קוד, והוא לא פונה לשכבת השירות.
-   השורה הראשונה קובעת את הכתובת של הדף. *@
+@* נוסף בגרסה 4, ובגרסה 5 נוספה ההפעלה.
+   דף ההרשמה. השורה הראשונה קובעת את הכתובת של הדף.
+   השורה השנייה קובעת שהדף רץ בשרת ומגיב ללחיצות, כך שאפשר לכתוב את כל הלוגיקה בקוד, בלי קוד בדפדפן.
+   שתי השורות האחרונות בראש הדף מבקשות שני שירותים: המחלקה שמדברת עם שכבת השירות, וכלי המעבר בין דפים.
+   ההרשמה נעשית בשני שלבים:
+   1. קריאה: בדיקה ששם המשתמש והאימייל לא קיימים כבר.
+   2. כתיבה: שמירת המשתמש החדש בבסיס הנתונים.
+   אחרי הרשמה מוצלחת מוצגת הודעה, ואחרי 5 שניות הדף עובר לדף הכניסה. *@
 
 <PageTitle>הרשמה · EmetGuard</PageTitle>
 
@@ -16,16 +27,35 @@
                     <h1 class="h2 fw-bold">הרשמה</h1>
                     <p class="text-secondary mb-4">פותחים חשבון תלמיד ומצטרפים לשיעור.</p>
 
-                    @* הדפדפן לא בודק את השדות בעצמו. הבדיקה תיכתב בהמשך בקוד *@
+                    @* הדפדפן לא בודק את השדות בעצמו. הבדיקה נעשית בקוד שבתחתית הדף *@
                     <form novalidate>
-                        @* ארבעה שדות מאותו רכיב משותף. שדות האימייל והסיסמה נכתבים משמאל לימין *@
-                        <Field Id="reg-username" Label="שם משתמש" Name="username" />
-                        <Field Id="reg-email" Label="אימייל" Name="email" Type="email" Dir="ltr" />
-                        <Field Id="reg-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" />
-                        <Field Id="reg-confirm" Label="אימות סיסמה" Name="confirmPassword" Type="password" Dir="ltr" />
+                        @* ארבעה שדות מאותו רכיב משותף. כל שדה מקושר למשתנה בקוד, בקישור דו כיווני.
+                           שדות האימייל והסיסמה נכתבים משמאל לימין *@
+                        <Field Id="reg-username" Label="שם משתמש" Name="username" @bind-Value="username" />
+                        <Field Id="reg-email" Label="אימייל" Name="email" Type="email" Dir="ltr" @bind-Value="email" />
+                        <Field Id="reg-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" @bind-Value="password" />
+                        <Field Id="reg-confirm" Label="אימות סיסמה" Name="confirmPassword" Type="password" Dir="ltr" @bind-Value="confirmPassword" />
 
-                        @* בשלב הזה הכפתור לא שולח את הטופס. ההפעלה תיכתב בהמשך בקוד *@
-                        <button class="btn btn-primary btn-lg w-100 mt-2" type="button">הרשמה</button>
+                        @* הודעת שגיאה. מוצגת רק כשיש שגיאה *@
+                        @if (errorMessage != null)
+                        {
+                            <div class="alert alert-danger" role="alert">@errorMessage</div>
+                        }
+
+                        @* הודעת הצלחה, עם ספירה לאחור עד המעבר לדף הכניסה *@
+                        @if (isRegistered)
+                        {
+                            <div class="alert alert-success" role="status">
+                                <strong>ההרשמה הצליחה!</strong> עוברים לדף הכניסה בעוד @secondsLeft שניות.
+                            </div>
+                        }
+
+                        @* הכפתור לא שולח את הטופס בדרך הרגילה: לחיצה עליו מפעילה את פעולת ההרשמה בקוד.
+                           בזמן השליחה, ואחרי הרשמה מוצלחת, הכפתור מושבת, כדי שלא ילחצו עליו פעמיים *@
+                        <button class="btn btn-primary btn-lg w-100 mt-2" type="button"
+                                disabled="@(isBusy || isRegistered)" @onclick="RegisterAsync">
+                            @(isBusy ? "בודקים..." : "הרשמה")
+                        </button>
                     </form>
                 </div>
             </div>
@@ -35,3 +65,92 @@
         </div>
     </div>
 </div>
+
+@code {
+    // הערכים שהמשתמש הקליד. כל משתנה מקושר לאחד השדות בטופס
+    private string? username;
+    private string? email;
+    private string? password;
+    private string? confirmPassword;
+
+    // מצב הדף: הודעת השגיאה, האם בקשה בדרך, האם ההרשמה הצליחה, וכמה שניות נשארו עד המעבר
+    private string? errorMessage;
+    private bool isBusy;
+    private bool isRegistered;
+    private int secondsLeft = 5;
+
+    // נקראת בלחיצה על כפתור ההרשמה
+    private async Task RegisterAsync()
+    {
+        errorMessage = null;
+
+        // בדיקות קלט, לפני שפונים לשרת
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email)
+            || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(confirmPassword))
+        {
+            errorMessage = "יש למלא את כל השדות.";
+            return;
+        }
+
+        // בדיקה שהאימייל בנוי נכון, בעזרת מחלקה מוכנה של השפה
+        if (!MailAddress.TryCreate(email.Trim(), out _))
+        {
+            errorMessage = "כתובת האימייל לא תקינה.";
+            return;
+        }
+
+        if (password != confirmPassword)
+        {
+            errorMessage = "הסיסמה ואימות הסיסמה לא זהים.";
+            return;
+        }
+
+        isBusy = true;
+        try
+        {
+            // שלב 1, קריאה: בודקים ששם המשתמש והאימייל עוד לא קיימים
+            if (await UserApi.UsernameExistsAsync(username.Trim()))
+            {
+                errorMessage = "שם המשתמש כבר תפוס. בחרו שם אחר.";
+                return;
+            }
+
+            if (await UserApi.EmailExistsAsync(email.Trim()))
+            {
+                errorMessage = "האימייל הזה כבר רשום במערכת.";
+                return;
+            }
+
+            // שלב 2, כתיבה: שומרים את המשתמש החדש בבסיס הנתונים
+            bool added = await UserApi.AddUserAsync(new User(username.Trim(), email.Trim(), password));
+            if (!added)
+            {
+                errorMessage = "ההרשמה נכשלה. נסו שוב.";
+                return;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            // הבקשה לא הגיעה לשרת: למשל, שכבת השירות לא פועלת
+            errorMessage = "השרת לא זמין כרגע. נסו שוב בעוד רגע.";
+            return;
+        }
+        finally
+        {
+            // הקטע הזה רץ תמיד, גם אחרי יציאה מהפעולה באמצע, כדי שהכפתור לא יישאר מושבת
+            isBusy = false;
+        }
+
+        // ההרשמה הצליחה: מציגים הודעה וסופרים לאחור. בכל שנייה הדף מתעדכן עם המספר החדש
+        isRegistered = true;
+        while (secondsLeft > 0)
+        {
+            StateHasChanged();
+            await Task.Delay(1000);
+            secondsLeft--;
+        }
+
+        // מעבר לדף הכניסה
+        Navigation.NavigateTo("login");
+    }
+}
