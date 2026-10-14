@@ -1,7 +1,6 @@
 using EmetGuardView.Components;
-using EmetGuardView.Services;
 
-// נקודת הכניסה של התצוגה. נוצר בגרסה 1 מהתבנית, ובגרסה 5 נוסף רישום המחלקה שמדברת עם שכבת השירות.
+// נקודת הכניסה של התצוגה. נוצר בגרסה 1 מהתבנית, ובגרסה 5 נוסף רישום הכלי ששולח בקשות לשכבת השירות.
 namespace EmetGuardView
 {
     public class Program
@@ -20,9 +19,10 @@ namespace EmetGuardView
             string apiBaseUrl = builder.Configuration["ApiBaseUrl"]
                 ?? throw new InvalidOperationException("ApiBaseUrl not found in appsettings.json.");
 
-            // רישום המחלקה שמדברת עם שכבת השירות. כל דף שצריך אותה מקבל אותה אוטומטית,
-            // יחד עם כלי לשליחת בקשות ברשת שכבר מכיר את הכתובת של שכבת השירות
-            builder.Services.AddHttpClient<UserApiClient>(client => client.BaseAddress = new Uri(apiBaseUrl));
+            // רישום הכלי ששולח בקשות ברשת, כשהוא כבר מכיר את הכתובת של שכבת השירות.
+            // כל דף שצריך לפנות לשכבת השירות מקבל אותו אוטומטית.
+            // התצוגה לא ניגשת לבסיס הנתונים: היא רק שולחת בקשות לבקר בשכבת השירות, והוא מפעיל את השאילתות בשכבת הגישה לנתונים
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
             var app = builder.Build();
 

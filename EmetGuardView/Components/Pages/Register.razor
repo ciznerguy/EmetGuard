@@ -1,18 +1,21 @@
 @page "/register"
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 @using System.Net.Mail
 @using Model
-@using EmetGuardView.Services
-@inject UserApiClient UserApi
+@inject HttpClient Http
 @inject NavigationManager Navigation
 
 @* נוסף בגרסה 4, ובגרסה 5 נוספה ההפעלה.
    דף ההרשמה. השורה הראשונה קובעת את הכתובת של הדף.
    השורה השנייה קובעת שהדף רץ בשרת ומגיב ללחיצות, כך שאפשר לכתוב את כל הלוגיקה בקוד, בלי קוד בדפדפן.
-   שתי השורות האחרונות בראש הדף מבקשות שני שירותים: המחלקה שמדברת עם שכבת השירות, וכלי המעבר בין דפים.
+   הדף מוצג רק אחרי שהחיבור לשרת מוכן. בלי זה, הדף מופיע רגע לפני החיבור,
+   ומה שהמשתמש מקליד או לוחץ באותו רגע הולך לאיבוד.
+   שתי השורות האחרונות בראש הדף מבקשות שני שירותים: הכלי ששולח בקשות לשכבת השירות, וכלי המעבר בין דפים.
+   הדף רק אוסף נתונים ומציג תוצאות. הוא לא ניגש לבסיס הנתונים:
+   כל בדיקה וכל שמירה נעשות בבקר של המשתמשים בשכבת השירות, שמפעיל את השאילתות בשכבת הגישה לנתונים.
    ההרשמה נעשית בשני שלבים:
-   1. קריאה: בדיקה ששם המשתמש והאימייל לא קיימים כבר.
-   2. כתיבה: שמירת המשתמש החדש בבסיס הנתונים.
+   1. קריאה: שתי בקשות לבקר, שבודקות ששם המשתמש והאימייל לא קיימים כבר.
+   2. כתיבה: בקשה לבקר, ששומרת את המשתמש החדש בבסיס הנתונים.
    אחרי הרשמה מוצלחת מוצגת הודעה, ואחרי 5 שניות הדף עובר לדף הכניסה. *@
 
 <PageTitle>הרשמה · EmetGuard</PageTitle>
@@ -108,22 +111,30 @@
         isBusy = true;
         try
         {
-            // שלב 1, קריאה: בודקים ששם המשתמש והאימייל עוד לא קיימים
-            if (await UserApi.UsernameExistsAsync(username.Trim()))
+            // שלב 1, קריאה: בודקים ששם המשתמש והאימייל עוד לא קיימים.
+            // הערך מקודד לפני שהוא נכנס לכתובת, כדי שתווים מיוחדים לא ישברו אותה.
+            // הבקר מחזיר אמת או שקר, והתשובה מומרת אוטומטית לערך בוליאני
+            bool usernameExists = await Http.GetFromJsonAsync<bool>($"api/users/exists/{Uri.EscapeDataString(username.Trim())}");
+            if (usernameExists)
             {
                 errorMessage = "שם המשתמש כבר תפוס. בחרו שם אחר.";
                 return;
             }
 
-            if (await UserApi.EmailExistsAsync(email.Trim()))
+            bool emailExists = await Http.GetFromJsonAsync<bool>($"api/users/email-exists/{Uri.EscapeDataString(email.Trim())}");
+            if (emailExists)
             {
                 errorMessage = "האימייל הזה כבר רשום במערכת.";
                 return;
             }
 
-            // שלב 2, כתיבה: שומרים את המשתמש החדש בבסיס הנתונים
-            bool added = await UserApi.AddUserAsync(new User(username.Trim(), email.Trim(), password));
-            if (!added)
+            // שלב 2, כתיבה: שולחים את המשתמש החדש לבקר, והוא שומר אותו בבסיס הנתונים.
+            // העצם מומר אוטומטית לפורמט של נתונים ברשת ונשלח בגוף הבקשה
+            User newUser = new User(username.Trim(), email.Trim(), password);
+            HttpResponseMessage response = await Http.PostAsJsonAsync("api/users", newUser);
+
+            // קוד מצב בטווח ההצלחה אומר שהמשתמש נשמר
+            if (!response.IsSuccessStatusCode)
             {
                 errorMessage = "ההרשמה נכשלה. נסו שוב.";
                 return;
