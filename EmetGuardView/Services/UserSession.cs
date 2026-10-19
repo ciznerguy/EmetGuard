@@ -37,8 +37,12 @@ namespace EmetGuardView.Services
             RoleId = user.RoleId;
             RoleName = user.RoleName;
 
-            // מפעילים את האירוע, כדי שכל מי שנרשם אליו יידע שמשתמש נכנס
-            OnChange?.Invoke();
+            // מפעילים את האירוע: כל רכיב שנרשם אליו, למשל הסרגל העליון, מקבל הודעה שמשתמש נכנס ומתעדכן.
+            // קודם בודקים שמישהו נרשם לאירוע. אם אף אחד לא נרשם, האירוע ריק, והפעלה שלו הייתה זורקת חריגה
+            if (OnChange != null)
+            {
+                OnChange.Invoke();
+            }
         }
 
         // ניקוי פרטי המשתמש ביציאה מהחשבון
@@ -50,7 +54,11 @@ namespace EmetGuardView.Services
             RoleId = 0;
             RoleName = string.Empty;
 
-            OnChange?.Invoke();
+            // מפעילים את האירוע, כדי שכל מי שנרשם אליו יידע שהמשתמש יצא. גם כאן בודקים קודם שמישהו נרשם
+            if (OnChange != null)
+            {
+                OnChange.Invoke();
+            }
         }
     }
 }
