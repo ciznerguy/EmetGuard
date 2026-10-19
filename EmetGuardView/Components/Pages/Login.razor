@@ -1,8 +1,17 @@
 @page "/login"
+@using System.Net
+@using Model
+@inject HttpClient Http
+@inject UserSession Session
+@inject NavigationManager Navigation
 
-@* נוסף בגרסה 4.
-   דף הכניסה. בשלב הזה הוא עיצוב בלבד: אין בו קוד, והוא לא פונה לשכבת השירות.
-   השורה הראשונה קובעת את הכתובת של הדף. *@
+@* נוסף בגרסה 4, ובגרסה 6 נוספה ההפעלה.
+   דף הכניסה. השורה הראשונה קובעת את הכתובת של הדף.
+   השורות שמתחילות במילה שמבקשת שירות מקבלות שלושה שירותים: הכלי ששולח בקשות לשכבת השירות,
+   השירות שזוכר את המשתמש המחובר, וכלי המעבר בין דפים.
+   הדף רק אוסף נתונים ומציג תוצאות. הוא לא ניגש לבסיס הנתונים:
+   הבדיקה שהשם והסיסמה מתאימים נעשית בבקר של המשתמשים בשכבת השירות, שמפעיל את השאילתה בשכבת הגישה לנתונים.
+   אחרי כניסה מוצלחת, פרטי המשתמש והתפקיד שלו נשמרים בשירות, והשירות מלווה את הגולש בכל הדפים. *@
 
 <PageTitle>כניסה · EmetGuard</PageTitle>
 
@@ -16,14 +25,23 @@
                     <h1 class="h2 fw-bold">כניסה</h1>
                     <p class="text-secondary mb-4">היכנסו לחשבון כדי להצביע בשיעור.</p>
 
-                    @* הדפדפן לא בודק את השדות בעצמו. הבדיקה תיכתב בהמשך בקוד *@
+                    @* הדפדפן לא בודק את השדות בעצמו. הבדיקה נעשית בקוד שבתחתית הדף *@
                     <form novalidate>
-                        @* כל שדה נבנה מהרכיב המשותף של שדה טופס *@
-                        <Field Id="login-username" Label="שם משתמש" Name="username" />
-                        <Field Id="login-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" />
+                        @* כל שדה נבנה מהרכיב המשותף של שדה טופס, ומקושר למשתנה בקוד בקישור דו כיווני *@
+                        <Field Id="login-username" Label="שם משתמש" Name="username" @bind-Value="username" />
+                        <Field Id="login-password" Label="סיסמה" Name="password" Type="password" Dir="ltr" @bind-Value="password" />
 
-                        @* בשלב הזה הכפתור לא שולח את הטופס. ההפעלה תיכתב בהמשך בקוד *@
-                        <button class="btn btn-primary btn-lg w-100 mt-2" type="button">כניסה</button>
+                        @* הודעת שגיאה. מוצגת רק כשיש שגיאה *@
+                        @if (errorMessage != null)
+                        {
+                            <div class="alert alert-danger" role="alert">@errorMessage</div>
+                        }
+
+                        @* לחיצה על הכפתור מפעילה את פעולת הכניסה בקוד. בזמן הבדיקה הכפתור מושבת *@
+                        <button class="btn btn-primary btn-lg w-100 mt-2" type="button"
+                                disabled="@isBusy" @onclick="LoginAsync">
+                            @(isBusy ? "בודקים..." : "כניסה")
+                        </button>
                     </form>
                 </div>
             </div>
@@ -33,3 +51,71 @@
         </div>
     </div>
 </div>
+
+@code {
+    // הערכים שהמשתמש הקליד
+    private string? username;
+    private string? password;
+
+    // מצב הדף: הודעת השגיאה, והאם בקשה בדרך
+    private string? errorMessage;
+    private bool isBusy;
+
+    // נקראת בלחיצה על כפתור הכניסה
+    private async Task LoginAsync()
+    {
+        errorMessage = null;
+
+        // בדיקת קלט, לפני שפונים לשרת
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "יש למלא שם משתמש וסיסמה.";
+            return;
+        }
+
+        isBusy = true;
+        try
+        {
+            // שולחים לבקר את שם המשתמש והסיסמה. הבקר מפעיל את השאילתה שבודקת שהם מתאימים
+            User credentials = new User { Username = username.Trim(), Password = password };
+            HttpResponseMessage response = await Http.PostAsJsonAsync("api/users/login", credentials);
+
+            // קוד 401 אומר שהשם או הסיסמה שגויים
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                errorMessage = "שם המשתמש או הסיסמה שגויים.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "הכניסה נכשלה. נסו שוב.";
+                return;
+            }
+
+            // הכניסה הצליחה: הבקר החזיר את המשתמש עם התפקיד שלו, והוא מומר אוטומטית לעצם
+            User? user = await response.Content.ReadFromJsonAsync<User>();
+            if (user == null)
+            {
+                errorMessage = "הכניסה נכשלה. נסו שוב.";
+                return;
+            }
+
+            // שומרים את המשתמש בשירות. מכאן כל הדפים יודעים מי מחובר
+            Session.Login(user);
+        }
+        catch (HttpRequestException)
+        {
+            // הבקשה לא הגיעה לשרת: למשל, שכבת השירות לא פועלת
+            errorMessage = "השרת לא זמין כרגע. נסו שוב בעוד רגע.";
+            return;
+        }
+        finally
+        {
+            isBusy = false;
+        }
+
+        // מעבר לדף הבית. המעבר נעשה בתוך אותו חיבור, ולכן השירות נשאר עם המשתמש
+        Navigation.NavigateTo("");
+    }
+}

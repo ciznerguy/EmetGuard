@@ -1,15 +1,30 @@
 @inherits LayoutComponentBase
+@implements IDisposable
+@inject UserSession Session
+@inject NavigationManager Navigation
 
-@* נוצר בגרסה 1 מהתבנית, ונכתב מחדש בגרסה 4.
+@* נוצר בגרסה 1 מהתבנית, ונכתב מחדש בגרסה 4. בגרסה 6 הסרגל העליון מציג את המשתמש המחובר.
    המבנה של כל דפי האתר: סרגל עליון, תוכן הדף ותחתית *@
 
-@* סרגל עליון שנשאר צמוד לראש המסך גם בגלילה: לוגו, ושני כפתורים לכניסה ולהרשמה *@
+@* סרגל עליון שנשאר צמוד לראש המסך גם בגלילה *@
 <header class="topbar sticky-top">
     <div class="container d-flex align-items-center justify-content-between py-3">
         <Logo />
-        <nav class="d-flex gap-2">
-            <a class="btn btn-outline-primary" href="login">כניסה</a>
-            <a class="btn btn-primary" href="register">הרשמה</a>
+        <nav class="d-flex gap-2 align-items-center">
+            @* נוסף בגרסה 6: אם יש משתמש מחובר, מציגים ברכה עם שם המשתמש שלו וכפתור יציאה.
+               אחרת מציגים "שלום, אורח" ואת שני הכפתורים לכניסה ולהרשמה *@
+            @if (Session.IsLoggedIn)
+            {
+                <span class="fw-semibold">שלום, @Session.Username</span>
+                <button class="btn btn-outline-primary" type="button" @onclick="Logout">יציאה</button>
+            }
+            else
+            {
+                @* גולש שלא נכנס לחשבון מקבל ברכה כללית *@
+                <span class="fw-semibold">שלום, אורח</span>
+                <a class="btn btn-outline-primary" href="login">כניסה</a>
+                <a class="btn btn-primary" href="register">הרשמה</a>
+            }
         </nav>
     </div>
 </header>
@@ -33,3 +48,31 @@
     <a href="." class="reload">רענון</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    // נוסף בגרסה 6.
+    // כשהמבנה נוצר, הוא נרשם לאירוע של השירות. כך הסרגל מתעדכן מיד כשמשתמש נכנס או יוצא
+    protected override void OnInitialized()
+    {
+        Session.OnChange += OnSessionChanged;
+    }
+
+    // נקראת כשהאירוע מופעל. מבקשת מהמבנה להתעדכן, בצורה בטוחה גם אם האירוע הגיע מחוץ לרכיב
+    private void OnSessionChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    // יציאה מהחשבון: מנקים את השירות וחוזרים לדף הבית
+    private void Logout()
+    {
+        Session.Logout();
+        Navigation.NavigateTo("");
+    }
+
+    // כשהמבנה נסגר, מבטלים את ההרשמה לאירוע, כדי שהשירות לא ימשיך לקרוא לרכיב שכבר לא קיים
+    public void Dispose()
+    {
+        Session.OnChange -= OnSessionChanged;
+    }
+}

@@ -24,6 +24,10 @@ namespace EmetGuardView
             // התצוגה לא ניגשת לבסיס הנתונים: היא רק שולחת בקשות לבקר בשכבת השירות, והוא מפעיל את השאילתות בשכבת הגישה לנתונים
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 
+            // נוסף בגרסה 6: רישום השירות שזוכר את המשתמש המחובר.
+            // עצם אחד לכל חיבור של דפדפן, וכל הדפים באותה לשונית מקבלים את אותו עצם
+            builder.Services.AddScoped<EmetGuardView.Services.UserSession>();
+
             var app = builder.Build();
 
             // מחוץ לסביבת הפיתוח: שגיאה לא צפויה מעבירה לדף השגיאה, בלי לחשוף פרטים טכניים למשתמש
