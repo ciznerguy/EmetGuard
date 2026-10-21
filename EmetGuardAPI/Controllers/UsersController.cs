@@ -29,7 +29,14 @@ namespace EmetGuardAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<User>>> GetAll()
         {
-            return Ok(await userDB.GetAllUsersAsync());
+            List<User> users = await userDB.GetAllUsersAsync();
+
+            // נוסף בגרסה 7: הסיסמה, גם כשהיא מוצפנת, לא יוצאת מהשרת. מרוקנים אותה לפני השליחה
+            foreach (User user in users)
+            {
+                user.Password = string.Empty;
+            }
+            return Ok(users);
         }
 
         // שליפת משתמש לפי מזהה. המזהה מגיע מסוף הכתובת וחייב להיות מספר שלם.
@@ -38,7 +45,14 @@ namespace EmetGuardAPI.Controllers
         public async Task<ActionResult<User>> GetById(int id)
         {
             User? user = await userDB.GetUserByIdAsync(id);
-            return user == null ? NotFound() : Ok(user);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // נוסף בגרסה 7: הסיסמה לא יוצאת מהשרת
+            user.Password = string.Empty;
+            return Ok(user);
         }
 
         // בדיקה אם שם משתמש תפוס. מחזיר אמת או שקר
@@ -86,6 +100,8 @@ namespace EmetGuardAPI.Controllers
             }
 
             // קוד 201: המשתמש נוצר. התשובה כוללת את המשתמש ואת הכתובת שבה אפשר לשלוף אותו
+            // נוסף בגרסה 7: לא מחזירים את הסיסמה שהמשתמש שלח
+            user.Password = string.Empty;
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
@@ -95,7 +111,14 @@ namespace EmetGuardAPI.Controllers
         public async Task<ActionResult<User>> Login([FromBody] User credentials)
         {
             User? user = await userDB.CheckLoginAsync(credentials.Username, credentials.Password);
-            return user == null ? Unauthorized() : Ok(user);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            // נוסף בגרסה 7: הסיסמה המוצפנת לא יוצאת מהשרת. התצוגה צריכה רק את פרטי המשתמש והתפקיד
+            user.Password = string.Empty;
+            return Ok(user);
         }
 
         // שינוי תפקיד. שם התפקיד החדש מגיע בכתובת.
@@ -103,14 +126,26 @@ namespace EmetGuardAPI.Controllers
         [HttpPut("{id:int}/role")]
         public async Task<IActionResult> UpdateRole(int id, [FromQuery] string roleName)
         {
-            return await userDB.UpdateUserRoleAsync(id, roleName) ? NoContent() : NotFound();
+            // אם לא עודכנה אף שורה, המשתמש לא נמצא: קוד 404
+            bool updated = await userDB.UpdateUserRoleAsync(id, roleName);
+            if (!updated)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
 
         // עדכון סיסמה. גוף הבקשה: הסיסמה החדשה כמחרוזת בין מירכאות
         [HttpPut("{id:int}/password")]
         public async Task<IActionResult> UpdatePassword(int id, [FromBody] string newPassword)
         {
-            return await userDB.UpdatePasswordAsync(id, newPassword) ? NoContent() : NotFound();
+            // אם לא עודכנה אף שורה, המשתמש לא נמצא: קוד 404
+            bool updated = await userDB.UpdatePasswordAsync(id, newPassword);
+            if (!updated)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
 
         // עדכון אימייל. גוף הבקשה: האימייל החדש כמחרוזת בין מירכאות.
@@ -121,14 +156,26 @@ namespace EmetGuardAPI.Controllers
             if (await userDB.EmailExistsAsync(newEmail))
                 return Conflict("Email already exists.");
 
-            return await userDB.UpdateEmailAsync(id, newEmail) ? NoContent() : NotFound();
+            // אם לא עודכנה אף שורה, המשתמש לא נמצא: קוד 404
+            bool updated = await userDB.UpdateEmailAsync(id, newEmail);
+            if (!updated)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
 
         // מחיקת משתמש לפי מזהה
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            return await userDB.DeleteUserAsync(id) ? NoContent() : NotFound();
+            // אם לא נמחקה אף שורה, המשתמש לא נמצא: קוד 404
+            bool deleted = await userDB.DeleteUserAsync(id);
+            if (!deleted)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

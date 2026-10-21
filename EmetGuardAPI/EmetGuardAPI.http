@@ -27,7 +27,12 @@ GET {{EmetGuardAPI_HostAddress}}/api/users/exists/admin
 ###
 
 # האם שם משתמש קיים (צפוי: אמת)
-GET {{EmetGuardAPI_HostAddress}}/api/users/exists/dana.cohen
+GET {{EmetGuardAPI_HostAddress}}/api/users/exists/user
+
+###
+
+# האם שם משתמש קיים (צפוי: שקר)
+GET {{EmetGuardAPI_HostAddress}}/api/users/exists/no.such.user
 
 ###
 
@@ -54,13 +59,25 @@ Content-Type: application/json
 
 ###
 
-# התחברות עם פרטים נכונים (צפוי: 200 והמשתמש)
+# התחברות של המנהל עם פרטים נכונים (צפוי: 200 והמשתמש, בלי סיסמה)
+# המשתמש נוצר בבסיס נתונים חדש. הסיסמה שלו זהה לשם המשתמש
 POST {{EmetGuardAPI_HostAddress}}/api/users/login
 Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "Admin123"
+  "password": "admin"
+}
+
+###
+
+# התחברות של המשתמש הרגיל עם פרטים נכונים (צפוי: 200 והמשתמש, בתפקיד תלמיד)
+POST {{EmetGuardAPI_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "username": "user",
+  "password": "user"
 }
 
 ###
@@ -77,15 +94,16 @@ Content-Type: application/json
 ###
 
 # הבקשות הבאות פועלות על משתמש הבדיקה.
-# לפני ההרצה, להחליף את 11 במזהה שהוחזר בהוספת המשתמש.
+# בבסיס נתונים חדש המזהה שלו הוא 3, כי המנהל הוא 1 והמשתמש הרגיל הוא 2.
+# אם המזהה שהוחזר בהוספת המשתמש שונה, להחליף את 3 במזהה שהוחזר.
 
 # שינוי תפקיד
-PUT {{EmetGuardAPI_HostAddress}}/api/users/11/role?roleName=Teacher
+PUT {{EmetGuardAPI_HostAddress}}/api/users/3/role?roleName=Teacher
 
 ###
 
 # עדכון סיסמה
-PUT {{EmetGuardAPI_HostAddress}}/api/users/11/password
+PUT {{EmetGuardAPI_HostAddress}}/api/users/3/password
 Content-Type: application/json
 
 "NewPass123"
@@ -93,7 +111,7 @@ Content-Type: application/json
 ###
 
 # עדכון אימייל
-PUT {{EmetGuardAPI_HostAddress}}/api/users/11/email
+PUT {{EmetGuardAPI_HostAddress}}/api/users/3/email
 Content-Type: application/json
 
 "new.test.user@example.com"
@@ -101,6 +119,6 @@ Content-Type: application/json
 ###
 
 # מחיקת משתמש הבדיקה
-DELETE {{EmetGuardAPI_HostAddress}}/api/users/11
+DELETE {{EmetGuardAPI_HostAddress}}/api/users/3
 
 ###

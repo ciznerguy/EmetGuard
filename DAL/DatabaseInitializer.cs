@@ -1,10 +1,11 @@
 using System.Data;
+using Model;
 using MySql.Data.MySqlClient;
 
 namespace DAL
 {
     /// <summary>
-    /// נוסף בגרסה 2.
+    /// נוסף בגרסה 2. בגרסה 7 נוסף שלב שמצפין סיסמאות ישנות.
     /// מחלקה שאחראית להכין את בסיס הנתונים לפני שהמערכת מתחילה לעבוד.
     /// היא נקראת פעם אחת, כשהשרת עולה, ויוצרת את בסיס הנתונים, את הטבלאות ואת נתוני הפתיחה.
     /// אפשר להריץ אותה שוב ושוב בלי נזק: בכל שלב נוצר רק מה שעוד לא קיים.
@@ -32,6 +33,99 @@ namespace DAL
 
             // שלב ג': הכנסת נתוני ברירת מחדל לטבלת התפקידים
             await SeedRolesAsync(dbConnectionString);
+
+            // שלב ד', נוסף בגרסה 7: הצפנה של סיסמאות שנשמרו לפני גרסה 7 כטקסט רגיל
+            await HashPlainPasswordsAsync(dbConnectionString);
+
+            // שלב ה', נוסף בגרסה 7: שני משתמשים התחלתיים, מנהל ומשתמש רגיל, עם סיסמה מוצפנת
+            await SeedUsersAsync(dbConnectionString);
+        }
+
+        /// <summary>
+        /// נוסף בגרסה 7.
+        /// מכניסה לבסיס נתונים חדש שני משתמשים, כדי שאפשר יהיה להיכנס לאתר מיד אחרי ההתקנה:
+        /// מנהל, ומשתמש רגיל בתפקיד תלמיד. בשניהם הסיסמה זהה לשם המשתמש, והיא נשמרת מוצפנת.
+        /// המשתמשים נוספים רק אם טבלת המשתמשים ריקה, כך שבהפעלות הבאות לא נוצרות כפילויות.
+        /// </summary>
+        private static async Task SeedUsersAsync(string dbConnectionString)
+        {
+            using var connection = new MySqlConnection(dbConnectionString);
+            await connection.OpenAsync();
+
+            // בדיקה אם הטבלה ריקה, בדיוק כמו בטבלת התפקידים
+            string checkSql = "SELECT COUNT(*) FROM Users;";
+            using var checkCmd = new MySqlCommand(checkSql, connection);
+            long count = Convert.ToInt64(await checkCmd.ExecuteScalarAsync());
+            if (count > 0)
+            {
+                return;
+            }
+
+            await InsertSeedUserAsync(connection, "admin", "admin@example.com", "admin", "Admin");
+            await InsertSeedUserAsync(connection, "user", "user@example.com", "user", "Student");
+        }
+
+        /// <summary>
+        /// נוסף בגרסה 7.
+        /// מוסיפה משתמש אחד. הסיסמה מוצפנת לפני השמירה,
+        /// ומזהה התפקיד נשלף מטבלת התפקידים לפי שם התפקיד, בעזרת שאילתה פנימית
+        /// </summary>
+        private static async Task InsertSeedUserAsync(MySqlConnection connection,
+            string username, string email, string password, string roleName)
+        {
+            string insertSql = @"
+                INSERT INTO Users (Username, Email, PasswordHash, RoleID)
+                VALUES (@Username, @Email, @Hash, (SELECT RoleID FROM Roles WHERE RoleName = @RoleName));";
+
+            using var command = new MySqlCommand(insertSql, connection);
+            command.Parameters.AddWithValue("@Username", username);
+            command.Parameters.AddWithValue("@Email", email);
+            command.Parameters.AddWithValue("@Hash", BCrypt.Net.BCrypt.HashPassword(password));
+            command.Parameters.AddWithValue("@RoleName", roleName);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        /// <summary>
+        /// נוסף בגרסה 7.
+        /// עד גרסה 7 הסיסמאות נשמרו בבסיס הנתונים כמו שהן. מגרסה 7 נשמר רק ערך מוצפן חד כיווני.
+        /// הפעולה מוצאת משתמשים שהסיסמה שלהם עדיין שמורה כטקסט רגיל, ומחליפה אותה בערך מוצפן.
+        /// הסיסמה עצמה לא משתנה: המשתמש ממשיך להיכנס עם אותה סיסמה.
+        /// כמו שאר האתחול, אפשר להריץ אותה שוב ושוב: משתמש שהסיסמה שלו כבר מוצפנת לא ייגע.
+        /// </summary>
+        private static async Task HashPlainPasswordsAsync(string dbConnectionString)
+        {
+            using var connection = new MySqlConnection(dbConnectionString);
+            await connection.OpenAsync();
+
+            // ערך מוצפן של השיטה שלנו תמיד מתחיל בסימן הדולר ובספרה 2.
+            // לכן כל סיסמה שלא מתחילה כך היא עדיין טקסט רגיל
+            string selectSql = "SELECT UserID, PasswordHash FROM Users WHERE PasswordHash NOT LIKE '$2%';";
+
+            // קודם קוראים את כל השורות לרשימה, ורק אחר כך מעדכנים.
+            // אי אפשר לשלוח פקודת עדכון באותו חיבור כל עוד קורא התוצאות פתוח.
+            // כל איבר ברשימה הוא עצם משתמש, ובו רק המזהה והסיסמה
+            List<User> usersToUpdate = new List<User>();
+            using (MySqlCommand selectCmd = new MySqlCommand(selectSql, connection))
+            using (var reader = await selectCmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    User user = new User();
+                    user.Id = reader.GetInt32(0);
+                    user.Password = reader.GetString(1);
+                    usersToUpdate.Add(user);
+                }
+            }
+
+            // מצפינים את הסיסמה של כל משתמש ברשימה, ושומרים את הערך המוצפן במקומה
+            foreach (User user in usersToUpdate)
+            {
+                string updateSql = "UPDATE Users SET PasswordHash = @Hash WHERE UserID = @UserID;";
+                using MySqlCommand updateCmd = new MySqlCommand(updateSql, connection);
+                updateCmd.Parameters.AddWithValue("@Hash", BCrypt.Net.BCrypt.HashPassword(user.Password));
+                updateCmd.Parameters.AddWithValue("@UserID", user.Id);
+                await updateCmd.ExecuteNonQueryAsync();
+            }
         }
 
         /// <summary>

@@ -40,7 +40,15 @@
                         @* לחיצה על הכפתור מפעילה את פעולת הכניסה בקוד. בזמן הבדיקה הכפתור מושבת *@
                         <button class="btn btn-primary btn-lg w-100 mt-2" type="button"
                                 disabled="@isBusy" @onclick="LoginAsync">
-                            @(isBusy ? "בודקים..." : "כניסה")
+                            @* בזמן שהבקשה בדרך מוצג טקסט אחר על הכפתור *@
+                            @if (isBusy)
+                            {
+                                <span>בודקים...</span>
+                            }
+                            else
+                            {
+                                <span>כניסה</span>
+                            }
                         </button>
                     </form>
                 </div>

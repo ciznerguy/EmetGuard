@@ -5,7 +5,7 @@ using MySql.Data.MySqlClient;
 namespace DAL
 {
     /// <summary>
-    /// נוסף בגרסה 3.
+    /// נוסף בגרסה 3. בגרסה 7 נוספה הצפנה חד כיוונית של הסיסמאות.
     /// כל השאילתות מול טבלת המשתמשים נמצאות כאן, ורק כאן.
     /// שכבת השירות לא כותבת שאילתות בעצמה: היא קוראת לפעולות של המחלקה הזו.
     /// כל פעולה פותחת חיבור משלה, מריצה שאילתה אחת וסוגרת את החיבור.
@@ -49,7 +49,9 @@ namespace DAL
             using var command = new MySqlCommand(sql, connection);
             command.Parameters.AddWithValue("@Username", user.Username);
             command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@Password", user.Password);
+            // נוסף בגרסה 7: בבסיס הנתונים נשמר ערך מוצפן חד כיווני של הסיסמה, ולא הסיסמה עצמה.
+            // הפעולה מוסיפה לכל סיסמה מלח אקראי, ולכן לשתי סיסמאות זהות יש ערך שמור שונה
+            command.Parameters.AddWithValue("@Password", BCrypt.Net.BCrypt.HashPassword(user.Password));
             command.Parameters.AddWithValue("@RoleName", roleName);
 
             // הפקודה מחזירה את מספר השורות שנוספו
@@ -116,8 +118,14 @@ namespace DAL
 
             User user = ReadUser(reader);
 
-            // ההשוואה נעשית בקוד ולא בשאילתה, כי בסיס הנתונים משווה מחרוזות בלי הבדל בין אותיות גדולות לקטנות
-            return user.Password == password ? user : null;
+            // בגרסה 7: בעמודת הסיסמה שמור ערך מוצפן, ולכן אי אפשר להשוות אותו לסיסמה שהוקלדה.
+            // הפעולה מצפינה את הסיסמה שהוקלדה עם אותו מלח ששמור בתוך הערך, ובודקת שהתוצאה זהה.
+            // הבדיקה נעשית בקוד ולא בשאילתה, ומבחינה בין אותיות גדולות לקטנות
+            if (BCrypt.Net.BCrypt.Verify(password, user.Password))
+            {
+                return user;
+            }
+            return null;
         }
 
         /// <summary>
@@ -134,7 +142,12 @@ namespace DAL
             command.Parameters.AddWithValue("@UserID", userId);
 
             using var reader = await command.ExecuteReaderAsync();
-            return await reader.ReadAsync() ? ReadUser(reader) : null;
+            // אם נמצאה שורה, הופכים אותה לעצם משתמש. אחרת, אין משתמש עם המזהה הזה
+            if (await reader.ReadAsync())
+            {
+                return ReadUser(reader);
+            }
+            return null;
         }
 
         /// <summary>
@@ -219,7 +232,8 @@ namespace DAL
             using var connection = new MySqlConnection(connectionString);
             await connection.OpenAsync();
             using var command = new MySqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@Password", newPassword);
+            // נוסף בגרסה 7: גם סיסמה חדשה נשמרת כערך מוצפן
+            command.Parameters.AddWithValue("@Password", BCrypt.Net.BCrypt.HashPassword(newPassword));
             command.Parameters.AddWithValue("@UserID", userId);
 
             return await command.ExecuteNonQueryAsync() > 0;
@@ -262,8 +276,14 @@ namespace DAL
         // הפעולה משותפת לכל השליפות, כדי שקריאת העמודות תיכתב פעם אחת בלבד
         private static User ReadUser(DbDataReader reader)
         {
-            // מועד ההרשמה יכול להיות ריק, ולכן בודקים אותו לפני הקריאה
+            // מועד ההרשמה יכול להיות ריק, ולכן בודקים אותו לפני הקריאה.
+            // אם הוא ריק, משתמשים בערך המינימלי של תאריך
             int createdAtIndex = reader.GetOrdinal("CreatedAt");
+            DateTime createdAt = DateTime.MinValue;
+            if (!reader.IsDBNull(createdAtIndex))
+            {
+                createdAt = reader.GetDateTime(createdAtIndex);
+            }
 
             return new User(
                 reader.GetInt32(reader.GetOrdinal("UserID")),
@@ -272,7 +292,7 @@ namespace DAL
                 reader.GetString(reader.GetOrdinal("PasswordHash")),
                 reader.GetInt32(reader.GetOrdinal("RoleID")),
                 reader.GetString(reader.GetOrdinal("RoleName")),
-                reader.IsDBNull(createdAtIndex) ? DateTime.MinValue : reader.GetDateTime(createdAtIndex));
+                createdAt);
         }
     }
 }
