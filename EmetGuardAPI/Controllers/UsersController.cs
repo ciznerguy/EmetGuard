@@ -110,6 +110,10 @@ namespace EmetGuardAPI.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<User>> Login([FromBody] User credentials)
         {
+            // שולחים לשכבת הגישה לנתונים את שם המשתמש והסיסמה שהגיעו בגוף הבקשה,
+            // ומחכים לתשובה מבסיס הנתונים.
+            // התשובה היא המשתמש עם התפקיד שלו אם השם והסיסמה נכונים, וערך ריק אם לא.
+            // סימן השאלה אחרי שם המחלקה אומר שהמשתנה יכול להיות ריק, ולכן בשורה הבאה בודקים אותו
             User? user = await userDB.CheckLoginAsync(credentials.Username, credentials.Password);
             if (user == null)
             {
