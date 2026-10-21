@@ -26,6 +26,7 @@
 
 | נספח | פגשנו בגרסה |
 |---|---|
+| [שאלות להבנה וחזרה](https://github.com/ciznerguy/EmetGuard/releases/download/v7/review-questions.pdf) | כל הגרסאות |
 | [גיבוי הפרויקט ב-Git וב-GitHub](https://github.com/ciznerguy/EmetGuard/releases/download/v1/appendix-git-backup.pdf) | 1 |
 | [סרטון: איך עובדים עם הגיט של EmetGuard](#סרטון-איך-עובדים-עם-הגיט-של-emetguard) | 1 |
 | [המחלקה DatabaseInitializer: אתחול בסיס הנתונים](https://github.com/ciznerguy/EmetGuard/releases/download/v2/v2-appendix-database-initializer.pdf) | 2 |
