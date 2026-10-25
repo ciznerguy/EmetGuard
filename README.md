@@ -20,6 +20,8 @@
 | 8 | **מטלה:** רמות הרשאה ודף ראשי לכל תפקיד | מטלה לתלמידים | [הנחיות מטלה שלב 8](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage8-permissions.pdf) |
 | 9 | **מטלה:** עיצוב הדפים הפנימיים | מטלה לתלמידים | [הנחיות מטלה שלב 9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage9-inner-pages.pdf) |
 
+**הגשה:** [הוראות הגשה שלבים 1-9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/submission-stages-1-9.pdf). קישור לפרויקט ב-GitHub וסרטון הסבר הם חובה.
+
 אפשר גם להוריד כל גרסה כקובץ zip מדף ה-[Releases](https://github.com/ciznerguy/EmetGuard/releases).
 
 ## נספחים
