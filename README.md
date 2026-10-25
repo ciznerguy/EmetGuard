@@ -17,6 +17,8 @@
 | 5 | הפעלת דף ההרשמה: בדיקה שהמשתמש לא קיים ושמירה בבסיס הנתונים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v5) | [מדריך הפעלת דף ההרשמה](https://github.com/ciznerguy/EmetGuard/releases/download/v5/v5-register-logic-guide.pdf) |
 | 6 | כניסה למערכת, ושירות שזוכר את המשתמש המחובר בכל הדפים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v6) | [מדריך כניסה ושירות משתמש](https://github.com/ciznerguy/EmetGuard/releases/download/v6/v6-login-session-guide.pdf) |
 | 7 | גיבוב סיסמאות עם BCrypt, ומשתמשים התחלתיים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v7) | [מדריך גיבוב סיסמאות](https://github.com/ciznerguy/EmetGuard/releases/download/v7/v7-password-hashing-guide.pdf) |
+| 8 | **מטלה:** רמות הרשאה ודף ראשי לכל תפקיד | מטלה לתלמידים | [הנחיות מטלה שלב 8](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage8-permissions.pdf) |
+| 9 | **מטלה:** עיצוב הדפים הפנימיים | מטלה לתלמידים | [הנחיות מטלה שלב 9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage9-inner-pages.pdf) |
 
 אפשר גם להוריד כל גרסה כקובץ zip מדף ה-[Releases](https://github.com/ciznerguy/EmetGuard/releases).
 
