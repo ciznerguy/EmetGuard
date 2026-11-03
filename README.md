@@ -19,6 +19,7 @@
 | 7 | גיבוב סיסמאות עם BCrypt, ומשתמשים התחלתיים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v7) | [מדריך גיבוב סיסמאות](https://github.com/ciznerguy/EmetGuard/releases/download/v7/v7-password-hashing-guide.pdf) |
 | 8 | **מטלה:** רמות הרשאה ודף ראשי לכל תפקיד | מטלה לתלמידים | [הנחיות מטלה שלב 8](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage8-permissions.pdf) |
 | 9 | **מטלה:** עיצוב הדפים הפנימיים | מטלה לתלמידים | [הנחיות מטלה שלב 9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage9-inner-pages.pdf) |
+| 10 | הודעות בקונסולת ה-API על הגישה לבסיס הנתונים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v10) | [מדריך הודעות בקונסולה](https://github.com/ciznerguy/EmetGuard/releases/download/v10/v10-console-logging-guide.pdf) |
 
 **הגשה:** [הוראות הגשה שלבים 1-9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/submission-stages-1-9.pdf). קישור לפרויקט ב-GitHub וסרטון הסבר הם חובה.
 
