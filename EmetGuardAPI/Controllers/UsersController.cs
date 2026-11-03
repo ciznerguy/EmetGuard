@@ -82,12 +82,19 @@ namespace EmetGuardAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> Add([FromBody] User user, [FromQuery] string roleName = "Student")
         {
-            // קוד 409: שם המשתמש או האימייל כבר תפוסים
+            // קוד 409: שם המשתמש או האימייל כבר תפוסים.
+            // נוסף בגרסה 10: הודעה בקונסולה על כל הרשמה שנכשלה
             if (await userDB.UsernameExistsAsync(user.Username))
+            {
+                Console.WriteLine($"[Register] Failed, username taken: {user.Username}");
                 return Conflict("Username already exists.");
+            }
 
             if (await userDB.EmailExistsAsync(user.Email))
+            {
+                Console.WriteLine($"[Register] Failed, email taken: {user.Email}");
                 return Conflict("Email already exists.");
+            }
 
             try
             {
@@ -96,6 +103,7 @@ namespace EmetGuardAPI.Controllers
             catch (InvalidOperationException ex)
             {
                 // תפקיד שלא קיים בטבלת התפקידים: קוד 400, בקשה שגויה
+                Console.WriteLine($"[Register] Failed, role not found: {roleName}");
                 return BadRequest(ex.Message);
             }
 

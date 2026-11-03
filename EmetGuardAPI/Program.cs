@@ -38,8 +38,18 @@ namespace EmetGuardAPI
             string serverConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-            // האתחול מסתיים לפני שהשרת מתחיל לקבל בקשות
-            await DAL.DatabaseInitializer.InitializeAsync(serverConnectionString);
+            // האתחול מסתיים לפני שהשרת מתחיל לקבל בקשות.
+            // נוסף בגרסה 10: אם החיבור לבסיס הנתונים נכשל (למשל סיסמה שגויה בקובץ הסודות, או ששרת MySQL כבוי),
+            // מודפסת הודעה ברורה עם סיבת השגיאה, והחריגה נזרקת שוב כדי שהשרת לא יעלה בלי בסיס נתונים
+            try
+            {
+                await DAL.DatabaseInitializer.InitializeAsync(serverConnectionString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DB] Database connection failed: {ex.Message}");
+                throw;
+            }
 
             // בסביבת הפיתוח בלבד: חשיפת מסמך התיאור של נקודות הקצה
             if (app.Environment.IsDevelopment())

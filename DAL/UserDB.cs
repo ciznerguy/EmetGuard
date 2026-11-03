@@ -6,6 +6,7 @@ namespace DAL
 {
     /// <summary>
     /// נוסף בגרסה 3. בגרסה 7 נוספה הצפנה חד כיוונית של הסיסמאות.
+    /// בגרסה 10 נוספו הודעות בקונסולה על כל פעולה מול הטבלה. הסיסמה לא מודפסת אף פעם.
     /// כל השאילתות מול טבלת המשתמשים נמצאות כאן, ורק כאן.
     /// שכבת השירות לא כותבת שאילתות בעצמה: היא קוראת לפעולות של המחלקה הזו.
     /// כל פעולה פותחת חיבור משלה, מריצה שאילתה אחת וסוגרת את החיבור.
@@ -63,6 +64,7 @@ namespace DAL
 
             // המזהה שבסיס הנתונים יצר לשורה החדשה נשמר בתוך העצם ומוחזר
             user.Id = (int)command.LastInsertedId;
+            Console.WriteLine($"[Register] New user added: {user.Username} (id {user.Id}, role {roleName})");
             return user.Id;
         }
 
@@ -114,7 +116,10 @@ namespace DAL
             // אם אין אף שורה, שם המשתמש לא קיים
             using var reader = await command.ExecuteReaderAsync();
             if (!await reader.ReadAsync())
+            {
+                Console.WriteLine($"[Login] Failed, username not found: {username}");
                 return null;
+            }
 
             User user = ReadUser(reader);
 
@@ -123,8 +128,10 @@ namespace DAL
             // הבדיקה נעשית בקוד ולא בשאילתה, ומבחינה בין אותיות גדולות לקטנות
             if (BCrypt.Net.BCrypt.Verify(password, user.Password))
             {
+                Console.WriteLine($"[Login] Success: {user.Username} ({user.RoleName})");
                 return user;
             }
+            Console.WriteLine($"[Login] Failed, wrong password: {username}");
             return null;
         }
 
@@ -145,8 +152,10 @@ namespace DAL
             // אם נמצאה שורה, הופכים אותה לעצם משתמש. אחרת, אין משתמש עם המזהה הזה
             if (await reader.ReadAsync())
             {
+                Console.WriteLine($"[Users] Read user by id {userId}");
                 return ReadUser(reader);
             }
+            Console.WriteLine($"[Users] No user with id {userId}");
             return null;
         }
 
@@ -167,6 +176,7 @@ namespace DAL
             while (await reader.ReadAsync())
                 users.Add(ReadUser(reader));
 
+            Console.WriteLine($"[Users] Read {users.Count} users");
             return users;
         }
 
@@ -218,7 +228,16 @@ namespace DAL
             command.Parameters.AddWithValue("@UserID", userId);
 
             // אם לא עודכנה אף שורה, המשתמש או התפקיד לא נמצאו
-            return await command.ExecuteNonQueryAsync() > 0;
+            bool updated = await command.ExecuteNonQueryAsync() > 0;
+            if (updated)
+            {
+                Console.WriteLine($"[Users] Role of user {userId} changed to {roleName}");
+            }
+            else
+            {
+                Console.WriteLine($"[Users] Role change failed: user {userId} or role {roleName} not found");
+            }
+            return updated;
         }
 
         /// <summary>
@@ -236,7 +255,16 @@ namespace DAL
             command.Parameters.AddWithValue("@Password", BCrypt.Net.BCrypt.HashPassword(newPassword));
             command.Parameters.AddWithValue("@UserID", userId);
 
-            return await command.ExecuteNonQueryAsync() > 0;
+            bool updated = await command.ExecuteNonQueryAsync() > 0;
+            if (updated)
+            {
+                Console.WriteLine($"[Users] Password of user {userId} updated");
+            }
+            else
+            {
+                Console.WriteLine($"[Users] Password update failed: no user with id {userId}");
+            }
+            return updated;
         }
 
         /// <summary>
@@ -253,7 +281,16 @@ namespace DAL
             command.Parameters.AddWithValue("@Email", newEmail);
             command.Parameters.AddWithValue("@UserID", userId);
 
-            return await command.ExecuteNonQueryAsync() > 0;
+            bool updated = await command.ExecuteNonQueryAsync() > 0;
+            if (updated)
+            {
+                Console.WriteLine($"[Users] Email of user {userId} changed to {newEmail}");
+            }
+            else
+            {
+                Console.WriteLine($"[Users] Email update failed: no user with id {userId}");
+            }
+            return updated;
         }
 
         /// <summary>
@@ -269,7 +306,16 @@ namespace DAL
             using var command = new MySqlCommand(sql, connection);
             command.Parameters.AddWithValue("@UserID", userId);
 
-            return await command.ExecuteNonQueryAsync() > 0;
+            bool deleted = await command.ExecuteNonQueryAsync() > 0;
+            if (deleted)
+            {
+                Console.WriteLine($"[Users] User {userId} deleted");
+            }
+            else
+            {
+                Console.WriteLine($"[Users] Delete failed: no user with id {userId}");
+            }
+            return deleted;
         }
 
         // הופך שורה מהשליפה המשותפת לעצם משתמש.

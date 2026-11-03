@@ -5,6 +5,7 @@ namespace DAL
 {
     /// <summary>
     /// נוסף בגרסה 2. בגרסה 7 נוסף שלב שיוצר שני משתמשים התחלתיים.
+    /// בגרסה 10 נוספו הודעות בקונסולה על כל שלב באתחול.
     /// מחלקה שאחראית להכין את בסיס הנתונים לפני שהמערכת מתחילה לעבוד.
     /// היא נקראת פעם אחת, כשהשרת עולה, ויוצרת את בסיס הנתונים, את הטבלאות ואת נתוני הפתיחה.
     /// אפשר להריץ אותה שוב ושוב בלי נזק: בכל שלב נוצר רק מה שעוד לא קיים.
@@ -35,6 +36,9 @@ namespace DAL
 
             // שלב ד', נוסף בגרסה 7: שני משתמשים התחלתיים, מנהל ומשתמש רגיל, עם סיסמה מוצפנת
             await SeedUsersAsync(dbConnectionString);
+
+            // נוסף בגרסה 10: הודעה בחלון של שכבת השירות שהאתחול הסתיים
+            Console.WriteLine("[DB] Initialization finished, the server is ready for requests");
         }
 
         /// <summary>
@@ -54,11 +58,13 @@ namespace DAL
             long count = Convert.ToInt64(await checkCmd.ExecuteScalarAsync());
             if (count > 0)
             {
+                Console.WriteLine($"[DB] Users table already has {count} users, no seed users added");
                 return;
             }
 
             await InsertSeedUserAsync(connection, "admin", "admin@example.com", "admin", "Admin");
             await InsertSeedUserAsync(connection, "user", "user@example.com", "user", "Student");
+            Console.WriteLine("[DB] Seed users added");
         }
 
         /// <summary>
@@ -93,11 +99,30 @@ namespace DAL
             // מתחברים לשרת בלי לציין בסיס נתונים, כי בשלב הזה הוא אולי עוד לא קיים.
             // החיבור והפקודה נסגרים אוטומטית בסוף הפעולה, גם אם נזרקה חריגה
             using var connection = new MySqlConnection(serverConnectionString);
+            Console.WriteLine("[DB] Connecting to the MySQL server...");
             await connection.OpenAsync();
+            Console.WriteLine("[DB] Connected to the server");
+
+            // נוסף בגרסה 10: בדיקה אם בסיס הנתונים כבר קיים, כדי לדעת איזו הודעה להציג.
+            // טבלת המערכת שבשאילתה מכילה שורה לכל בסיס נתונים שקיים בשרת
+            string existsSql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = @Name;";
+            using var existsCmd = new MySqlCommand(existsSql, connection);
+            existsCmd.Parameters.AddWithValue("@Name", DatabaseName);
+            long existing = Convert.ToInt64(await existsCmd.ExecuteScalarAsync());
+
             using var command = new MySqlCommand(sql, connection);
 
             // הרצת פקודה שלא מחזירה נתונים, אלא רק משנה את מבנה השרת
             await command.ExecuteNonQueryAsync();
+
+            if (existing > 0)
+            {
+                Console.WriteLine($"[DB] Database {DatabaseName} already exists");
+            }
+            else
+            {
+                Console.WriteLine($"[DB] Created new database: {DatabaseName}");
+            }
         }
 
         /// <summary>
@@ -199,6 +224,7 @@ namespace DAL
             await connection.OpenAsync();
             using var command = new MySqlCommand(createTablesSql, connection);
             await command.ExecuteNonQueryAsync();
+            Console.WriteLine("[DB] All seven tables are ready");
         }
 
         /// <summary>
@@ -228,6 +254,11 @@ namespace DAL
                 ";
                 using var insertCmd = new MySqlCommand(insertRolesSql, connection);
                 await insertCmd.ExecuteNonQueryAsync();
+                Console.WriteLine("[DB] Added the three roles: Admin, Teacher, Student");
+            }
+            else
+            {
+                Console.WriteLine("[DB] Roles table already filled");
             }
         }
     }
