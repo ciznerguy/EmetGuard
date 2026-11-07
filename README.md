@@ -20,12 +20,19 @@
 | 8 | **מטלה:** רמות הרשאה ודף ראשי לכל תפקיד | מטלה לתלמידים | [הנחיות מטלה שלב 8](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage8-permissions.pdf) |
 | 9 | **מטלה:** עיצוב הדפים הפנימיים | מטלה לתלמידים | [הנחיות מטלה שלב 9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/assignment-stage9-inner-pages.pdf) |
 | 10 | הודעות בקונסולת ה-API על הגישה לבסיס הנתונים | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v10) | [מדריך הודעות בקונסולה](https://github.com/ciznerguy/EmetGuard/releases/download/v10/v10-console-logging-guide.pdf) |
-| 11 | בסיס נתונים בענן (Aiven), ובחירה בקוד בין השרת המקומי לשרת בענן | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v11) | [מדריך בסיס נתונים בענן](https://github.com/ciznerguy/EmetGuard/releases/download/v11/v11-cloud-database-guide.pdf) |
-| 12 | פרסום האתר ב-Render עם Docker. האתר באוויר: [emetguard.onrender.com](https://emetguard.onrender.com) | [לעיון בקוד](https://github.com/ciznerguy/EmetGuard/tree/v12) | [מדריך פרסום האתר ב-Render](https://github.com/ciznerguy/EmetGuard/releases/download/v12/v12-render-deploy-guide.pdf) |
 
 **הגשה:** [הוראות הגשה שלבים 1-9](https://github.com/ciznerguy/EmetGuard/releases/download/v7/submission-stages-1-9.pdf). קישור לפרויקט ב-GitHub וסרטון הסבר הם חובה.
 
 אפשר גם להוריד כל גרסה כקובץ zip מדף ה-[Releases](https://github.com/ciznerguy/EmetGuard/releases).
+
+## העשרה
+
+שלבים למי שרוצה ללמוד עוד. **הם לא חובה:** הפרויקט עומד בכל דרישות הקורס גם בלעדיהם. כדאי לגשת אליהם רק אחרי שסיימתם את שלבי הפרויקט. הקוד שלהם נמצא בגרסה העדכנית של הפרויקט (main).
+
+| נושא | מה לומדים | מדריך |
+|---|---|---|
+| Remote DB | בסיס נתונים MySQL בענן (Aiven), ובחירה בקוד בין השרת המקומי לשרת בענן | [מדריך Remote DB](https://github.com/ciznerguy/EmetGuard/releases/download/v11/v11-cloud-database-guide.pdf) |
+| Website Hosting | פרסום האתר באינטרנט ב-Render עם Docker. האתר של פרויקט הדוגמה: [emetguard.onrender.com](https://emetguard.onrender.com) | [מדריך Website Hosting](https://github.com/ciznerguy/EmetGuard/releases/download/v12/v12-render-deploy-guide.pdf) |
 
 ## נספחים
 
