@@ -53,6 +53,9 @@ namespace Model
         }
 
         // דריסה של הפעולה שמחזירה תיאור טקסטואלי של העצם: שם המשתמש והתפקיד שלו
-        public override string ToString() => $"{Username} ({RoleName})";
+        public override string ToString()
+        {
+            return $"{Username} ({RoleName})";
+        }
     }
 }

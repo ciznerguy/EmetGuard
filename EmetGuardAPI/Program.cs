@@ -1,5 +1,6 @@
 // נקודת הכניסה של שכבת השירות.
 // נוצר בגרסה 1 מהתבנית, בגרסה 2 נוסף אתחול בסיס הנתונים, ובגרסה 3 נוסף רישום מחלקת הגישה למשתמשים.
+// בגרסה 11 נוספה בחירה בין בסיס הנתונים המקומי לבסיס הנתונים בענן.
 namespace EmetGuardAPI
 {
     public class Program
@@ -23,20 +24,29 @@ namespace EmetGuardAPI
             // הקובץ נשמר בתיקייה של המשתמש במחשב, מחוץ לתיקיית הפרויקט, ולכן הסיסמה לא עולה לגיט.
             // אם המחרוזת לא נמצאה, נזרקת חריגה, והשרת לא עולה.
             //
-            // רישום מחלקת הגישה למשתמשים עם מחרוזת חיבור מלאה (כולל שם בסיס הנתונים), כדי שהבקרים יקבלו אותה אוטומטית.
+            // נוסף בגרסה 11: בחירת השרת של בסיס הנתונים.
+            // בקובץ הסודות שמורות שתי מחרוזות חיבור: DefaultConnection לשרת המקומי, ו-AivenConnection לשרת בענן.
+            // כדי לעבור לשרת האחר, משנים את השם שבין המירכאות ומריצים את השרת מחדש
+            string connectionName = "DefaultConnection";
+            Console.WriteLine($"[DB] Using connection string: {connectionName}");
+
+            // נוסף בגרסה 11: קריאת מחרוזת החיבור פעם אחת בלבד, לפי השם שנבחר.
+            // המחרוזת מכילה רק את פרטי השרת, בלי שם בסיס הנתונים. אם היא לא נמצאה בקובץ הסודות, נזרקת חריגה והשרת לא עולה
+            string? serverConnectionString = builder.Configuration.GetConnectionString(connectionName);
+            if (serverConnectionString == null)
+            {
+                throw new InvalidOperationException($"Connection string '{connectionName}' not found.");
+            }
+
+            // מחרוזת חיבור מלאה: פרטי השרת ועוד שם בסיס הנתונים
+            string dbConnectionString = serverConnectionString + "Database=EmetGuardDB;";
+
+            // רישום מחלקת הגישה למשתמשים עם מחרוזת החיבור המלאה, כדי שהבקרים יקבלו אותה אוטומטית.
             // נוצר עצם אחד בלבד, וכל הבקשות משתמשות בו, כי אין בו נתונים שמשתנים
-            string dbConnectionString = (builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found."))
-                + "Database=EmetGuardDB;";
             builder.Services.AddSingleton(new DAL.UserDB(dbConnectionString));
 
             // בניית האפליקציה מתוך ההגדרות שנרשמו
             var app = builder.Build();
-
-            // שליפה של אותה מחרוזת חיבור מקובץ הסודות, הפעם בלי להוסיף את שם בסיס הנתונים,
-            // כי האתחול מתחבר קודם לשרת עצמו, ורק אחר כך יוצר את בסיס הנתונים
-            string serverConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             // האתחול מסתיים לפני שהשרת מתחיל לקבל בקשות.
             // נוסף בגרסה 10: אם החיבור לבסיס הנתונים נכשל (למשל סיסמה שגויה בקובץ הסודות, או ששרת MySQL כבוי),
