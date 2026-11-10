@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>חלקי הפרויקט</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f6; --paper:#ffffff; --ink:#1d2433; --muted:#5b6578; --line:#d6dbe5;
+  --model:#7c4dff; --dal:#00897b; --api:#e65100; --view:#1e6fd9; --db:#5d4037;
+  --ok:#2e7d32; --bad:#c62828; --soft:#f4f6fa; --code:#1e2230;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);font-family:Heebo,Arial,sans-serif;color:var(--ink);overflow:hidden}
+#stage{position:absolute;width:1280px;height:720px;left:50%;top:50%;transform-origin:center center}
+.slide{position:absolute;inset:0;background:var(--paper);border-radius:14px;box-shadow:0 10px 40px rgba(20,30,60,.15);padding:46px 60px 40px;display:none;overflow:hidden}
+.slide.active{display:block}
+.slide h2{margin:0 0 6px;font-size:38px;font-weight:800}
+.slide .sub{color:var(--muted);font-size:20px;margin:0 0 22px}
+.cover .num{color:#8f9bb8}
+.num{position:absolute;left:28px;bottom:18px;color:var(--muted);font-size:15px}
+.tag{display:inline-block;padding:2px 12px;border-radius:20px;color:#fff;font-weight:700;font-size:15px;vertical-align:middle;margin-inline-start:10px}
+.c-model{color:var(--model)} .c-dal{color:var(--dal)} .c-api{color:var(--api)} .c-view{color:var(--view)} .c-db{color:var(--db)}
+.b-model{background:var(--model)} .b-dal{background:var(--dal)} .b-api{background:var(--api)} .b-view{background:var(--view)} .b-db{background:var(--db)}
+code,.code{font-family:Consolas,"Courier New",monospace}
+code{background:var(--soft);padding:1px 6px;border-radius:5px;direction:ltr;unicode-bidi:isolate;font-size:.92em}
+pre{direction:ltr;text-align:left;background:var(--code);color:#e8ecf5;border-radius:10px;padding:16px 20px;font-size:17px;line-height:1.55;margin:0;white-space:pre}
+pre .k{color:#7fb0ff} pre .s{color:#ffcf7a} pre .c{color:#7d8799} pre .t{color:#6fe0c8}
+.row{display:flex;gap:26px;align-items:flex-start}
+.col{flex:1}
+ul.pts{margin:0;padding:0 22px 0 0;font-size:22px;line-height:1.6}
+ul.pts li{margin-bottom:6px}
+.remember{position:absolute;right:60px;left:60px;bottom:46px;background:#fff8e1;border:2px solid #ffca28;border-radius:10px;padding:10px 18px;font-size:19px}
+.remember b{color:#b26a00}
+.card{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+table.t{border-collapse:collapse;width:100%;font-size:19px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:right}
+table.t th{background:var(--soft)}
+.ltr{direction:ltr;unicode-bidi:isolate}
+
+/* ===== אנימציות: מתחילות בכל פעם שהשקף נפתח ===== */
+.slide.active .in{animation:fadeUp .6s both;animation-delay:var(--d,0s)}
+.slide.active .pop{animation:pop .5s both;animation-delay:var(--d,0s)}
+.slide.active .drop{animation:drop .7s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d,0s)}
+.slide.active .grow{animation:grow .7s both;animation-delay:var(--d,0s);transform-origin:right center}
+.slide.active .flash{animation:flash 1s both;animation-delay:var(--d,0s)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes drop{from{opacity:0;transform:translateY(-120px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes flash{0%{background:transparent}30%{background:rgba(255,214,0,.45)}100%{background:rgba(255,214,0,.18)}}
+
+/* זרימה: צמתים וקישורים עם נקודה שנעה */
+.flow{display:flex;align-items:center;gap:0}
+.node{min-width:150px;padding:14px 12px;border-radius:12px;color:#fff;text-align:center;font-weight:700;font-size:19px;box-shadow:0 4px 12px rgba(0,0,0,.12);position:relative;z-index:2}
+.node small{display:block;font-weight:400;font-size:14px;opacity:.92}
+.link{flex:1;height:6px;background:var(--line);position:relative;margin:0 4px;border-radius:3px}
+.dot{position:absolute;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;opacity:0}
+.slide.active .dot.go{animation:goL var(--t,1s) linear both;animation-delay:var(--d,0s)}
+.slide.active .dot.back{animation:goR var(--t,1s) linear both;animation-delay:var(--d,0s)}
+@keyframes goL{0%{right:-10px;opacity:1}95%{opacity:1}100%{right:calc(100% - 10px);opacity:0}}
+@keyframes goR{0%{right:calc(100% - 10px);opacity:1}95%{opacity:1}100%{right:-10px;opacity:0}}
+
+/* ניווט */
+#nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
+#nav button{font-family:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
+#bar{position:fixed;top:0;right:0;height:4px;background:var(--view);transition:width .3s;z-index:10}
+@media print{#nav,#bar{display:none}}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="stage">
+
+<!-- 1 -->
+<section class="slide cover" style="background:linear-gradient(135deg,#141a2b 0%,#1e2a4a 60%,#2b2350 100%);color:#fff;padding:0">
+  <svg class="in" style="--d:0s;position:absolute;inset:0" width="1280" height="720" viewBox="0 0 1280 720">
+    <g stroke="rgba(255,255,255,.06)" stroke-width="1">
+      <line x1="0" y1="120" x2="1280" y2="120"/><line x1="0" y1="240" x2="1280" y2="240"/><line x1="0" y1="360" x2="1280" y2="360"/><line x1="0" y1="480" x2="1280" y2="480"/><line x1="0" y1="600" x2="1280" y2="600"/>
+      <line x1="160" y1="0" x2="160" y2="720"/><line x1="320" y1="0" x2="320" y2="720"/><line x1="480" y1="0" x2="480" y2="720"/><line x1="640" y1="0" x2="640" y2="720"/><line x1="800" y1="0" x2="800" y2="720"/><line x1="960" y1="0" x2="960" y2="720"/><line x1="1120" y1="0" x2="1120" y2="720"/>
+    </g>
+  </svg>
+  <div style="position:absolute;right:80px;top:150px;width:620px">
+    <div class="in" style="--d:.2s;display:inline-block;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:4px 16px;font-size:18px;color:#c9d3ea">הכנה למבחן</div>
+    <h1 class="in" style="--d:.4s;font-size:60px;line-height:1.15;margin:22px 0 0;font-weight:800">פרויקט 5 יחידות<br>בהנדסת תוכנה</h1>
+    <div class="grow" style="--d:.9s;width:140px;height:6px;border-radius:3px;margin:26px 0;background:linear-gradient(90deg,var(--model),var(--dal),var(--api),var(--view))"></div>
+    <p class="in" style="--d:1.1s;font-size:30px;margin:0;font-weight:500">חלקי הפרויקט: ארבע השכבות ותפקיד כל אחת</p>
+    <p class="in" style="--d:1.4s;font-size:19px;margin:18px 0 0;color:#b8c3dc;line-height:1.6">מה כל חלק עושה ואיך החלקים מדברים זה עם זה.<br>הדוגמאות לקוחות מפרויקט הדוגמה, ואותו מבנה צריך להיות בפרויקט שלכם.</p>
+    <p class="in" style="--d:1.7s;font-size:18px;margin:34px 0 0;color:#8f9bb8">כיתה יב · תשפ"ז</p>
+  </div>
+  <div style="position:absolute;left:90px;top:150px;width:380px;display:flex;flex-direction:column;gap:14px">
+    <div class="node b-view drop" style="--d:1.0s">View <small>מה שהמשתמש רואה</small></div>
+    <div class="node b-api drop" style="--d:1.3s">API <small>מקבל בקשות ומחזיר תשובות</small></div>
+    <div class="node b-dal drop" style="--d:1.6s">DAL <small>מדבר עם בסיס הנתונים</small></div>
+    <div class="node b-model drop" style="--d:1.9s">Model <small>המחלקות שעוברות בין כולם</small></div>
+    <div class="node b-db drop" style="--d:2.2s">MySQL <small>בסיס הנתונים</small></div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <h2>התמונה הגדולה: ארבע שכבות</h2>
+  <p class="sub">כל שכבה אחראית על דבר אחד, ומדברת רק עם השכבה שלידה</p>
+  <div class="flow" style="margin-top:30px">
+    <div class="node pop" style="background:#455a64;--d:.1s">דפדפן<small>המשתמש</small></div>
+    <div class="link"><div class="dot go" style="background:#455a64;--d:2.0s"></div></div>
+    <div class="node b-view pop" style="--d:.4s">View<small>Blazor</small></div>
+    <div class="link"><div class="dot go" style="background:var(--view);--d:3.0s"></div></div>
+    <div class="node b-api pop" style="--d:.7s">API<small>Controllers</small></div>
+    <div class="link"><div class="dot go" style="background:var(--api);--d:4.0s"></div></div>
+    <div class="node b-dal pop" style="--d:1.0s">DAL<small>UserDB</small></div>
+    <div class="link"><div class="dot go" style="background:var(--dal);--d:5.0s"></div></div>
+    <div class="node b-db pop" style="--d:1.3s">MySQL<small>בסיס הנתונים</small></div>
+  </div>
+  <div class="node b-model in" style="--d:1.6s;width:760px;margin:22px auto 0">המחלקה <bdi>User</bdi> מהפרויקט <bdi>Model</bdi> עוברת בין <bdi>View</bdi>, <bdi>API</bdi> ו-<bdi>DAL</bdi></div>
+  <div class="row" style="margin-top:28px">
+    <div class="col card in" style="--d:2.2s"><b>הפרדת אחריות</b><br>כל שכבה עושה תפקיד אחד, ולכן קל למצוא איפה כל דבר כתוב.</div>
+    <div class="col card in" style="--d:2.6s"><b>החלפה בלי לשבור</b><br>אפשר לשנות את המסכים בלי לגעת בשאילתות, ולהפך.</div>
+    <div class="col card in" style="--d:3.0s"><b>כמה לקוחות</b><br>אתר ואפליקציה יכולים להשתמש באותו API.</div>
+    <div class="col card in" style="--d:3.4s"><b>אבטחה</b><br>רק ה-API ניגש לבסיס הנתונים. הדפדפן לא מכיר אותו.</div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <h2>Solution אחד, ארבעה פרויקטים</h2>
+  <p class="sub">ב-Visual Studio כל שכבה היא פרויקט נפרד בתוך אותו Solution. השמות בפרויקט שלכם לפי הנושא</p>
+  <div class="row">
+    <div class="col">
+      <pre class="in" style="--d:.2s;font-size:20px">MyProject.slnx
+├── <span class="t">Model</span>          Class Library
+├── <span class="t">DAL</span>            Class Library
+├── <span class="t">MyProjectAPI</span>   ASP.NET Core Web API
+└── <span class="t">MyProjectView</span>  Blazor Web App</pre>
+    </div>
+    <div class="col">
+      <table class="t">
+        <tr class="in" style="--d:.5s"><th>פרויקט</th><th>סוג</th><th>רץ לבד?</th></tr>
+        <tr class="in" style="--d:.8s"><td class="c-model"><b>Model</b></td><td>ספריית מחלקות</td><td>לא</td></tr>
+        <tr class="in" style="--d:1.1s"><td class="c-dal"><b>DAL</b></td><td>ספריית מחלקות</td><td>לא</td></tr>
+        <tr class="in" style="--d:1.4s"><td class="c-api"><b>API</b></td><td>שרת</td><td>כן</td></tr>
+        <tr class="in" style="--d:1.7s"><td class="c-view"><b>View</b></td><td>אתר</td><td>כן</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card in" style="--d:2.1s;margin-top:24px;font-size:20px">
+    ספריית מחלקות (Class Library) לא רצה לבד. היא נבנית לקובץ <code>.dll</code>, ופרויקטים אחרים משתמשים בה. לכן מריצים ביחד רק שני פרויקטים: <b class="c-api">API</b> ו-<b class="c-view">View</b> (Multiple startup projects).
+  </div>
+  <div class="remember in" style="--d:2.5s"><b>לזכור:</b> שני פרויקטים רצים, שניים הם ספריות. כל אחד מהשניים שרצים מאזין לכתובת משלו.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <h2>מי מכיר את מי: Project Reference</h2>
+  <p class="sub">פרויקט יכול להשתמש במחלקות של פרויקט אחר רק אם הוסיפו אליו הפניה</p>
+  <svg width="1160" height="330" viewBox="0 0 1160 330" style="display:block">
+    <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5b6578"/></marker><marker id="arv" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--view)"/></marker></defs>
+    <g class="pop" style="--d:.1s"><rect x="900" y="20" width="200" height="64" rx="12" fill="var(--view)"/><text x="1000" y="60" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">View</text></g>
+    <g class="pop" style="--d:.3s"><rect x="620" y="20" width="200" height="64" rx="12" fill="var(--api)"/><text x="720" y="60" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">API</text></g>
+    <g class="pop" style="--d:.5s"><rect x="340" y="20" width="200" height="64" rx="12" fill="var(--dal)"/><text x="440" y="60" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">DAL</text></g>
+    <g class="pop" style="--d:.7s"><rect x="480" y="240" width="200" height="64" rx="12" fill="var(--model)"/><text x="580" y="280" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">Model</text></g>
+    <g class="in" style="--d:1.2s"><line x1="620" y1="52" x2="550" y2="52" stroke="#5b6578" stroke-width="4" marker-end="url(#ar)"/><text x="585" y="80" font-size="15" text-anchor="middle" fill="#5b6578">מפנה</text></g>
+    <g class="in" style="--d:3.3s"><line x1="898" y1="52" x2="832" y2="52" stroke="var(--view)" stroke-width="4" stroke-dasharray="7 5" marker-end="url(#arv)"/><text x="862" y="80" font-size="15" text-anchor="middle" fill="var(--view)" font-weight="700">HTTP</text></g>
+    <g class="in" style="--d:3.6s" font-size="15" fill="#5b6578">
+      <line x1="300" y1="250" x2="250" y2="250" stroke="#5b6578" stroke-width="4"/><text x="240" y="255" text-anchor="start">Project Reference: מכיר את המחלקות</text>
+      <line x1="300" y1="285" x2="250" y2="285" stroke="var(--view)" stroke-width="4" stroke-dasharray="7 5"/><text x="240" y="290" text-anchor="start">בקשת HTTP בזמן ריצה</text>
+    </g>
+    <g class="in" style="--d:1.7s"><line x1="440" y1="84" x2="540" y2="232" stroke="#5b6578" stroke-width="4" marker-end="url(#ar)"/></g>
+    <g class="in" style="--d:2.2s"><line x1="1000" y1="84" x2="690" y2="250" stroke="#5b6578" stroke-width="4" marker-end="url(#ar)"/></g>
+    <g class="in" style="--d:2.9s"><path d="M900,96 C760,150 560,150 470,96" fill="none" stroke="var(--bad)" stroke-width="3" stroke-dasharray="8 6"/><text x="690" y="160" font-size="19" fill="var(--bad)" text-anchor="middle" font-weight="700">✗ ל-View אין הפניה ל-DAL</text></g>
+  </svg>
+  <div class="row" style="margin-top:-6px">
+    <div class="col in" style="--d:3.4s"><pre style="font-size:16px"><span class="c">&lt;!-- MyProjectAPI.csproj --&gt;</span>
+&lt;ProjectReference Include=<span class="s">"..\DAL\DAL.csproj"</span> /&gt;</pre></div>
+    <div class="col card in" style="--d:3.7s;font-size:19px">ה-View מדבר עם ה-API, אבל לא דרך הפניה בין פרויקטים. הוא שולח בקשות HTTP לכתובת של ה-API בזמן ריצה. ה-View מכיר רק את Model, ולכן הוא <b>לא יכול</b> לגשת ל-DAL או לבסיס הנתונים, רק לבקש מה-API.</div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <h2><span class="c-model">Model</span>: המחלקות של הנתונים</h2>
+  <p class="sub">מחלקות שמתארות את המידע במערכת. אין בהן SQL ואין בהן מסכים</p>
+  <div class="row">
+    <div class="col">
+      <ul class="pts">
+        <li class="in" style="--d:.2s">כל מחלקה מייצגת <b>שורה בטבלה</b>: עצם <code>User</code> הוא משתמש אחד.</li>
+        <li class="in" style="--d:.5s">בפרויקט: <code>BaseEntity</code> ו-<code>User</code>.</li>
+        <li class="in" style="--d:.8s">זו השכבה היחידה שכל השכבות האחרות מכירות.</li>
+        <li class="in" style="--d:1.1s">היא "השפה המשותפת": כולם מעבירים ביניהם עצמי <code>User</code>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="card in" style="--d:1.4s;text-align:center;font-size:19px">
+        מסע של עצם User
+        <div class="flow" style="margin-top:18px">
+          <div class="node b-dal" style="min-width:110px">DAL<small>יוצר</small></div>
+          <div class="link"><div class="dot go" style="background:var(--model);--d:2.0s;--t:1.2s"></div></div>
+          <div class="node b-api" style="min-width:110px">API<small>שולח</small></div>
+          <div class="link"><div class="dot go" style="background:var(--model);--d:3.3s;--t:1.2s"></div></div>
+          <div class="node b-view" style="min-width:110px">View<small>מציג</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:2.2s"><b>לזכור:</b> Model לא יודע מאיפה הנתונים מגיעים ולא איך מציגים אותם. הוא רק מתאר אותם.</div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <h2>BaseEntity וירושה</h2>
+  <p class="sub">המזהה (Id) משותף לכל טבלה, ולכן מגדירים אותו פעם אחת במחלקת בסיס</p>
+  <div class="row">
+    <div class="col in" style="--d:.2s"><pre><span class="k">public abstract class</span> <span class="t">BaseEntity</span>
+{
+    <span class="k">public int</span> Id { <span class="k">get</span>; <span class="k">set</span>; }
+
+    <span class="k">protected</span> BaseEntity() { }
+    <span class="k">protected</span> BaseEntity(<span class="k">int</span> id)
+    {
+        Id = id;
+    }
+}</pre></div>
+    <div class="col">
+      <svg width="520" height="250" viewBox="0 0 520 250">
+        <defs><marker id="ar2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="var(--model)"/></marker></defs>
+        <g class="pop" style="--d:.5s"><rect x="150" y="10" width="220" height="70" rx="12" fill="#fff" stroke="var(--model)" stroke-width="3" stroke-dasharray="7 5"/><text x="260" y="40" text-anchor="middle" font-size="20" font-weight="700" fill="var(--model)">BaseEntity</text><text x="260" y="66" text-anchor="middle" font-size="16" fill="#5b6578">abstract · Id</text></g>
+        <g class="in" style="--d:1.1s"><line x1="260" y1="165" x2="260" y2="92" stroke="var(--model)" stroke-width="4" marker-end="url(#ar2)"/><text x="275" y="135" font-size="16" fill="#5b6578">יורשת</text></g>
+        <g class="pop" style="--d:1.5s"><rect x="150" y="168" width="220" height="70" rx="12" fill="var(--model)"/><text x="260" y="200" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">User</text><text x="260" y="225" text-anchor="middle" font-size="15" fill="#fff">Username, Email, ...</text></g>
+        <g class="in" style="--d:2.2s"><circle cx="420" cy="205" r="26" fill="#ffca28"/><text x="420" y="211" text-anchor="middle" font-size="16" font-weight="700">Id</text><text x="460" y="250" text-anchor="middle" font-size="14" fill="#5b6578">קיבלה בירושה</text></g>
+      </svg>
+    </div>
+  </div>
+  <ul class="pts" style="margin-top:6px;font-size:20px">
+    <li class="in" style="--d:2.6s"><code>abstract</code>: אי אפשר ליצור <code>new BaseEntity()</code>. יוצרים רק מחלקות שיורשות ממנה.</li>
+    <li class="in" style="--d:2.9s"><code>protected</code>: רק מחלקה יורשת יכולה לקרוא לבנאים. <code>User</code> קוראת להם עם <code>: base(id)</code>.</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <h2>המחלקה User מול הטבלה Users</h2>
+  <p class="sub">כל תכונה במחלקה מתאימה לעמודה בטבלה. DAL הוא שמעתיק ביניהן</p>
+  <div class="row" style="align-items:stretch">
+    <div class="col card"><div style="font-weight:700;margin-bottom:8px" class="c-model">User (C#)</div>
+      <div class="code ltr" style="font-size:19px;line-height:2.05;text-align:left">
+        <div class="flash" style="--d:.6s">int Id</div>
+        <div class="flash" style="--d:1.0s">string Username</div>
+        <div class="flash" style="--d:1.4s">string Email</div>
+        <div class="flash" style="--d:1.8s">string Password</div>
+        <div class="flash" style="--d:2.2s">int RoleId</div>
+        <div class="flash" style="--d:2.6s">string RoleName</div>
+        <div class="flash" style="--d:3.0s">DateTime CreatedAt</div>
+        <div class="flash" style="--d:3.4s">bool IsActive</div>
+      </div></div>
+    <div style="width:120px;display:flex;flex-direction:column;justify-content:space-around;padding:38px 0 6px;font-size:22px;text-align:center;color:var(--muted)">
+      <div class="in" style="--d:.6s">⟷</div><div class="in" style="--d:1.0s">⟷</div><div class="in" style="--d:1.4s">⟷</div><div class="in" style="--d:1.8s">⟷</div><div class="in" style="--d:2.2s">⟷</div><div class="in" style="--d:2.6s">JOIN</div><div class="in" style="--d:3.0s">⟷</div><div class="in" style="--d:3.4s">⟷</div>
+    </div>
+    <div class="col card"><div style="font-weight:700;margin-bottom:8px" class="c-db">Users (MySQL)</div>
+      <div class="code ltr" style="font-size:19px;line-height:2.05;text-align:left">
+        <div class="flash" style="--d:.6s">UserID INT PK</div>
+        <div class="flash" style="--d:1.0s">Username VARCHAR UNIQUE</div>
+        <div class="flash" style="--d:1.4s">Email VARCHAR UNIQUE</div>
+        <div class="flash" style="--d:1.8s">PasswordHash VARCHAR</div>
+        <div class="flash" style="--d:2.2s">RoleID INT FK</div>
+        <div class="flash" style="--d:2.6s">Roles.RoleName</div>
+        <div class="flash" style="--d:3.0s">CreatedAt DATETIME</div>
+        <div class="flash" style="--d:3.4s">IsActive BOOLEAN</div>
+      </div></div>
+  </div>
+  <div class="remember in" style="--d:3.9s;bottom:30px"><b>לזכור:</b> <code>RoleName</code> לא נמצא בטבלת המשתמשים. הוא מגיע מטבלת <code>Roles</code> בצירוף טבלאות (JOIN) לפי <code>RoleID</code>.</div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <h2>בנאים ו-ToString במחלקה User</h2>
+  <p class="sub">לכל בנאי יש מצב שבו משתמשים בו</p>
+  <table class="t" style="font-size:19px">
+    <tr class="in" style="--d:.2s"><th>הבנאי</th><th>מתי משתמשים בו</th></tr>
+    <tr class="in" style="--d:.6s"><td class="ltr" style="text-align:left"><code>User()</code></td><td>השרת ממיר JSON שהגיע בבקשה לעצם. הוא צריך בנאי ריק</td></tr>
+    <tr class="in" style="--d:1.0s"><td class="ltr" style="text-align:left"><code>User(username, email, password)</code></td><td>משתמש חדש שעוד לא נשמר. אין לו מזהה</td></tr>
+    <tr class="in" style="--d:1.4s"><td class="ltr" style="text-align:left"><code>User(id, ..., createdAt) : base(id)</code></td><td>משתמש שנשלף מבסיס הנתונים. המזהה עובר לבנאי של BaseEntity</td></tr>
+  </table>
+  <div class="row" style="margin-top:24px">
+    <div class="col in" style="--d:1.9s"><pre><span class="k">public override string</span> ToString()
+{
+    <span class="k">return</span> <span class="s">$"{Username} ({RoleName})"</span>;
+}</pre></div>
+    <div class="col" style="text-align:center">
+      <div class="in" style="--d:2.4s;font-size:19px;color:var(--muted)">‏<code>Console.WriteLine(user);</code> מדפיס:</div>
+      <div class="pop code" style="--d:2.9s;margin-top:12px;font-size:30px;background:var(--code);color:#6fe0c8;border-radius:10px;padding:14px">admin (Admin)</div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:3.4s"><b>לזכור:</b> <code>override</code> דורס את <code>ToString</code> שכל מחלקה מקבלת מ-<code>object</code>. בלי הדריסה היה מודפס <code>Model.User</code>.</div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <h2><span class="c-db">MySQL</span>: בסיס הנתונים</h2>
+  <p class="sub">בכל פרויקט יש טבלת תפקידים וטבלת משתמשים, ולצידן הטבלאות של הנושא שלכם</p>
+  <div class="row">
+    <div class="col card in" style="--d:.2s">
+      <b>Roles</b>
+      <table class="t ltr" style="font-size:17px;margin-top:6px">
+        <tr><th style="text-align:left">RoleID (PK)</th><th style="text-align:left">RoleName</th></tr>
+        <tr class="in" style="--d:.6s"><td style="text-align:left">1</td><td style="text-align:left">Admin</td></tr>
+        <tr class="in" style="--d:.8s"><td style="text-align:left">2</td><td style="text-align:left">Teacher</td></tr>
+        <tr class="in" style="--d:1.0s"><td style="text-align:left">3</td><td style="text-align:left">Student</td></tr>
+      </table>
+    </div>
+    <div class="col card in" style="--d:1.3s;flex:2">
+      <b>Users</b>
+      <table class="t ltr" style="font-size:17px;margin-top:6px">
+        <tr><th style="text-align:left">UserID</th><th style="text-align:left">Username</th><th style="text-align:left">PasswordHash</th><th style="text-align:left">RoleID (FK)</th></tr>
+        <tr class="in" style="--d:1.7s"><td style="text-align:left">1</td><td style="text-align:left">admin</td><td style="text-align:left">$2a$11$Kq9…</td><td style="text-align:left" class="flash" >1</td></tr>
+        <tr class="in" style="--d:2.0s"><td style="text-align:left">2</td><td style="text-align:left">user</td><td style="text-align:left">$2a$11$Hx2…</td><td style="text-align:left">3</td></tr>
+        <tr class="in" style="--d:2.3s"><td style="text-align:left">3</td><td style="text-align:left">dana</td><td style="text-align:left">$2a$11$Pm7…</td><td style="text-align:left">2</td></tr>
+      </table>
+    </div>
+  </div>
+  <ul class="pts" style="margin-top:20px;font-size:20px">
+    <li class="in" style="--d:2.7s"><b>מפתח ראשי (PK)</b>: מזהה ייחודי לכל שורה, <code>AUTO_INCREMENT</code> נותן אותו לבד.</li>
+    <li class="in" style="--d:3.0s"><b>מפתח זר (FK)</b>: <code>RoleID</code> במשתמשים חייב להיות מזהה שקיים בטבלת <code>Roles</code>.</li>
+    <li class="in" style="--d:3.3s"><b>UNIQUE</b>: אי אפשר שני משתמשים עם אותו שם משתמש או אותו אימייל.</li>
+  </ul>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <h2>DatabaseInitializer: הכנת בסיס הנתונים</h2>
+  <p class="sub">רץ פעם אחת בכל הפעלה של ה-API, לפני שהשרת מקבל בקשות</p>
+  <div class="row">
+    <div class="col">
+      <div class="node b-dal in" style="--d:.2s;text-align:right;margin-bottom:10px">שלב 1: התחברות לשרת <bdi>MySQL</bdi></div>
+      <div class="node b-dal in" style="--d:.9s;text-align:right;margin-bottom:10px">שלב 2: <bdi>CREATE DATABASE IF NOT EXISTS</bdi></div>
+      <div class="node b-dal in" style="--d:1.6s;text-align:right;margin-bottom:10px">שלב 3: <bdi>CREATE TABLE IF NOT EXISTS</bdi> לכל טבלה</div>
+      <div class="node b-dal in" style="--d:2.3s;text-align:right;margin-bottom:10px">שלב 4: הוספת התפקידים, אם הטבלה ריקה</div>
+      <div class="node b-dal in" style="--d:3.0s;text-align:right">שלב 5: הוספת משתמשים התחלתיים, אם אין משתמשים</div>
+    </div>
+    <div class="col">
+      <div class="card" style="font-size:18px">
+        <b class="in" style="--d:1.6s;display:block">הטבלאות</b>
+        <div class="code ltr" style="text-align:left;display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 14px">
+          <span class="pop" style="--d:1.8s;background:var(--dal);color:#fff;padding:3px 10px;border-radius:6px">Roles</span>
+          <span class="pop" style="--d:1.9s;background:var(--dal);color:#fff;padding:3px 10px;border-radius:6px">Users</span>
+          <span class="pop" style="--d:2.0s;background:#fff;color:var(--dal);border:2px dashed var(--dal);padding:3px 10px;border-radius:6px">+ הטבלאות של הנושא שלכם</span>
+        </div>
+        <b class="in" style="--d:2.5s;display:block">תפקידים</b>
+        <div class="in code ltr" style="--d:2.6s;text-align:left;margin:6px 0 14px">Admin · Teacher · Student</div>
+        <b class="in" style="--d:3.2s;display:block">משתמשים התחלתיים</b>
+        <div class="in code ltr" style="--d:3.3s;text-align:left;margin-top:6px">admin (Admin) · user (Student)</div>
+      </div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:4.3s"><b>לזכור:</b> בזכות <code>IF NOT EXISTS</code> אפשר להריץ שוב ושוב בלי שגיאה ובלי למחוק נתונים קיימים.</div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <h2><span class="c-dal">DAL</span>: שכבת הגישה לנתונים</h2>
+  <p class="sub">Data Access Layer. השכבה היחידה שכותבת SQL ומדברת עם MySQL</p>
+  <div class="row">
+    <div class="col">
+      <ul class="pts">
+        <li class="in" style="--d:.2s">המחלקה <code>UserDB</code>: כל הפעולות על טבלת המשתמשים. בפרויקט שלכם יש מחלקה כזו לכל טבלה.</li>
+        <li class="in" style="--d:.5s">מקבלת את מחרוזת החיבור בבנאי.</li>
+        <li class="in" style="--d:.8s">כל פעולה: שאילתה אחת, ומחזירה עצמי <code>User</code> או תוצאה פשוטה.</li>
+        <li class="in" style="--d:1.1s">לא יודעת מי ביקש: אתר, אפליקציה או בדיקה.</li>
+      </ul>
+    </div>
+    <div class="col card" style="font-size:18px">
+      <b>פעולות ב-UserDB</b>
+      <div class="code ltr" style="text-align:left;line-height:1.85;margin-top:6px">
+        <div class="in" style="--d:1.3s">AddUserAsync <span style="color:var(--muted)">→ INSERT</span></div>
+        <div class="in" style="--d:1.5s">CheckLoginAsync <span style="color:var(--muted)">→ SELECT</span></div>
+        <div class="in" style="--d:1.7s">GetUserByIdAsync <span style="color:var(--muted)">→ SELECT</span></div>
+        <div class="in" style="--d:1.9s">GetAllUsersAsync <span style="color:var(--muted)">→ SELECT</span></div>
+        <div class="in" style="--d:2.1s">UsernameExistsAsync <span style="color:var(--muted)">→ SELECT EXISTS</span></div>
+        <div class="in" style="--d:2.3s">UpdateUserRoleAsync <span style="color:var(--muted)">→ UPDATE</span></div>
+        <div class="in" style="--d:2.5s">UpdatePasswordAsync <span style="color:var(--muted)">→ UPDATE</span></div>
+        <div class="in" style="--d:2.7s">DeleteUserAsync <span style="color:var(--muted)">→ DELETE</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:3.1s"><b>לזכור:</b> אם רוצים לשנות שאילתה, משנים רק ב-DAL. ה-API וה-View לא מושפעים.</div>
+</section>
+
+<!-- 12 -->
+<section class="slide">
+  <h2>מבנה של פעולה ב-DAL</h2>
+  <p class="sub">CheckLoginAsync: אותם שלבים חוזרים בכל פעולה</p>
+  <div class="row">
+    <div class="col" style="flex:1.45"><pre style="font-size:15.5px"><span class="flash" style="--d:.5s">string sql = SelectUserSql + <span class="s">" WHERE u.Username = @Username;"</span>;</span>
+
+<span class="flash" style="--d:1.4s"><span class="k">using var</span> connection = <span class="k">new</span> MySqlConnection(connectionString);
+<span class="k">await</span> connection.OpenAsync();</span>
+<span class="flash" style="--d:2.3s"><span class="k">using var</span> command = <span class="k">new</span> MySqlCommand(sql, connection);
+command.Parameters.AddWithValue(<span class="s">"@Username"</span>, username);</span>
+
+<span class="flash" style="--d:3.2s"><span class="k">using var</span> reader = <span class="k">await</span> command.ExecuteReaderAsync();
+<span class="k">if</span> (!<span class="k">await</span> reader.ReadAsync()) { <span class="k">return null</span>; }</span>
+
+<span class="flash" style="--d:4.1s">User user = ReadUser(reader);</span>
+<span class="flash" style="--d:5.0s"><span class="k">if</span> (BCrypt.Net.BCrypt.Verify(password, user.Password))
+{
+    <span class="k">return</span> user;
+}
+<span class="k">return null</span>;</span></pre></div>
+    <div class="col" style="font-size:18px">
+      <div class="card in" style="--d:.5s;margin-bottom:8px"><b>1.</b> כותבים את השאילתה</div>
+      <div class="card in" style="--d:1.4s;margin-bottom:8px"><b>2.</b> פותחים חיבור לבסיס הנתונים</div>
+      <div class="card in" style="--d:2.3s;margin-bottom:8px"><b>3.</b> יוצרים פקודה ומוסיפים פרמטרים</div>
+      <div class="card in" style="--d:3.2s;margin-bottom:8px"><b>4.</b> מריצים וקוראים שורה</div>
+      <div class="card in" style="--d:4.1s;margin-bottom:8px"><b>5.</b> הופכים את השורה לעצם User</div>
+      <div class="card in" style="--d:5.0s"><b>6.</b> בודקים סיסמה ומחזירים תשובה</div>
+    </div>
+  </div>
+  <div class="in" style="--d:5.6s;margin-top:12px;font-size:18px"><code>using</code> סוגר את החיבור לבד בסוף הפעולה, גם אם הייתה שגיאה.</div>
+</section>
+
+<!-- 13 -->
+<section class="slide">
+  <h2>למה שאילתה עם פרמטרים?</h2>
+  <p class="sub">המשתמש מקליד בשם המשתמש: <code>' OR '1'='1</code></p>
+  <div class="row" style="align-items:stretch">
+    <div class="col card in" style="--d:.3s;border-color:var(--bad)">
+      <b style="color:var(--bad)">✗ חיבור מחרוזות</b>
+      <pre style="font-size:15px;margin-top:8px">sql = <span class="s">"... WHERE Username = '"</span> + username + <span class="s">"'"</span>;</pre>
+      <div class="in" style="--d:1.2s;margin-top:12px;font-size:17px">השאילתה שנשלחת:</div>
+      <pre class="pop" style="--d:1.6s;font-size:15px;margin-top:6px">... WHERE Username = '<span style="color:#ff8a80">' OR '1'='1</span>'</pre>
+      <div class="pop" style="--d:2.3s;margin-top:12px;font-size:19px;color:var(--bad);font-weight:700">'1'='1' תמיד נכון: מתקבלות כל השורות. הקלט הפך לחלק מהקוד.</div>
+    </div>
+    <div class="col card in" style="--d:3.0s;border-color:var(--ok)">
+      <b style="color:var(--ok)">✓ פרמטר</b>
+      <pre style="font-size:15px;margin-top:8px">sql = <span class="s">"... WHERE Username = @Username"</span>;
+command.Parameters.AddWithValue(<span class="s">"@Username"</span>, username);</pre>
+      <div class="in" style="--d:3.8s;margin-top:12px;font-size:17px">MySQL מקבל את הערך בנפרד:</div>
+      <div class="pop code ltr" style="--d:4.2s;margin-top:6px;background:#e8f5e9;border:2px solid var(--ok);border-radius:8px;padding:10px;text-align:left;font-size:16px">@Username = <span style="background:#fff;padding:0 4px">"' OR '1'='1"</span> ← just text</div>
+      <div class="pop" style="--d:4.9s;margin-top:12px;font-size:19px;color:var(--ok);font-weight:700">מחפשים משתמש ששמו בדיוק הטקסט הזה. אין כזה, ולכן אין תוצאה.</div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:5.5s;bottom:30px"><b>לזכור:</b> ההתקפה נקראת SQL Injection. פרמטרים מונעים אותה, כי הערך אף פעם לא הופך לחלק מהשאילתה.</div>
+</section>
+
+<!-- 14 -->
+<section class="slide">
+  <h2>async ו-await</h2>
+  <p class="sub">פנייה לבסיס הנתונים לוקחת זמן. בזמן ההמתנה השרת יכול לטפל בבקשות אחרות</p>
+  <div class="card in" style="--d:.2s;font-size:19px;margin-bottom:18px">דוגמה: מלצר שמגיש הזמנה למטבח. הוא לא עומד ליד המטבח עד שהמנה מוכנה. הוא הולך לשרת שולחנות אחרים, וחוזר כשהמנה מוכנה.</div>
+  <div style="font-size:18px;margin-bottom:6px"><b>בלי await</b>: השרת תקוע עד שהתשובה חוזרת</div>
+  <div style="position:relative;height:40px;background:var(--soft);border-radius:8px;overflow:hidden">
+    <div class="grow" style="--d:.8s;position:absolute;right:0;top:0;bottom:0;width:70%;background:var(--bad);opacity:.85;color:#fff;padding:7px 14px;font-weight:700">מחכה ל-MySQL… ולא עושה כלום אחר</div>
+  </div>
+  <div style="font-size:18px;margin:18px 0 6px"><b>עם await</b>: בזמן ההמתנה מטפלים במשתמשים אחרים</div>
+  <div style="position:relative;height:40px;background:var(--soft);border-radius:8px;overflow:hidden;display:flex;gap:4px">
+    <div class="grow" style="--d:1.8s;width:12%;background:var(--dal);color:#fff;padding:7px 10px">שולח שאילתה</div>
+    <div class="grow" style="--d:2.3s;width:18%;background:var(--view);color:#fff;padding:7px 10px">משתמש ב'</div>
+    <div class="grow" style="--d:2.8s;width:18%;background:var(--api);color:#fff;padding:7px 10px">משתמש ג'</div>
+    <div class="grow" style="--d:3.3s;width:20%;background:var(--ok);color:#fff;padding:7px 10px">התשובה חזרה ✓</div>
+  </div>
+  <div class="row" style="margin-top:22px">
+    <div class="col in" style="--d:3.8s"><pre style="font-size:17px"><span class="k">public async</span> Task&lt;User?&gt; CheckLoginAsync(...)
+...
+<span class="k">await</span> connection.OpenAsync();</pre></div>
+    <div class="col in" style="--d:4.1s;font-size:19px;line-height:1.6"><code>async</code> מסמן פעולה שיש בה המתנות.<br><code>Task&lt;User?&gt;</code>: "בעתיד תחזור תשובה מסוג User".<br><code>await</code>: מחכים כאן בלי לתקוע את השרת.</div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide">
+  <h2><span class="c-api">API</span>: שכבת השירות</h2>
+  <p class="sub">שרת שמקבל בקשות HTTP, קורא ל-DAL ומחזיר תשובה עם קוד מצב</p>
+  <div class="row">
+    <div class="col in" style="--d:.2s"><pre style="font-size:16.5px">[ApiController]
+[Route(<span class="s">"api/[controller]"</span>)]
+<span class="k">public class</span> <span class="t">UsersController</span> : ControllerBase
+{
+    <span class="k">private readonly</span> UserDB userDB;
+
+    <span class="k">public</span> UsersController(UserDB userDB)
+    {
+        <span class="k">this</span>.userDB = userDB;
+    }
+    ...
+}</pre></div>
+    <div class="col" style="font-size:19px">
+      <div class="card in" style="--d:.8s;margin-bottom:10px"><code>[ApiController]</code>: זה בקר של API. בקשה לא תקינה נדחית אוטומטית.</div>
+      <div class="card in" style="--d:1.4s;margin-bottom:10px"><code>[Route("api/[controller]")]</code>: שם המחלקה בלי Controller. ‏UsersController מקבל את הכתובת <code>api/users</code>.</div>
+      <div class="card in" style="--d:2.0s"><code>UserDB</code> מגיע בבנאי. הבקר לא יוצר אותו בעצמו ולא מכיר את מחרוזת החיבור.</div>
+    </div>
+  </div>
+  <div class="flow in" style="--d:2.6s;margin-top:20px">
+    <div class="node" style="background:#455a64;min-width:150px">בקשת HTTP</div>
+    <div class="link"><div class="dot go" style="background:var(--api);--d:3.0s"></div></div>
+    <div class="node b-api">UsersController</div>
+    <div class="link"><div class="dot go" style="background:var(--api);--d:4.0s"></div></div>
+    <div class="node b-dal">UserDB</div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide">
+  <h2>נקודות הקצה של UsersController</h2>
+  <p class="sub">כל פעולה בבקר היא כתובת + פעולת HTTP</p>
+  <table class="t" style="font-size:18px">
+    <tr class="in" style="--d:.1s"><th>פעולה</th><th>כתובת</th><th>מה עושה</th></tr>
+    <tr class="in" style="--d:.4s"><td><span class="tag" style="background:#1565c0;margin:0">GET</span></td><td class="ltr" style="text-align:left"><code>api/users</code></td><td>כל המשתמשים</td></tr>
+    <tr class="in" style="--d:.7s"><td><span class="tag" style="background:#1565c0;margin:0">GET</span></td><td class="ltr" style="text-align:left"><code>api/users/5</code></td><td>משתמש לפי מזהה</td></tr>
+    <tr class="in" style="--d:1.0s"><td><span class="tag" style="background:#1565c0;margin:0">GET</span></td><td class="ltr" style="text-align:left"><code>api/users/exists/dana</code></td><td>האם שם המשתמש תפוס</td></tr>
+    <tr class="in" style="--d:1.3s"><td><span class="tag" style="background:#2e7d32;margin:0">POST</span></td><td class="ltr" style="text-align:left"><code>api/users</code></td><td>הרשמה: משתמש חדש בגוף הבקשה</td></tr>
+    <tr class="in" style="--d:1.6s"><td><span class="tag" style="background:#2e7d32;margin:0">POST</span></td><td class="ltr" style="text-align:left"><code>api/users/login</code></td><td>כניסה: שם משתמש וסיסמה בגוף הבקשה</td></tr>
+    <tr class="in" style="--d:1.9s"><td><span class="tag" style="background:#ef6c00;margin:0">PUT</span></td><td class="ltr" style="text-align:left"><code>api/users/5/role?roleName=Teacher</code></td><td>שינוי תפקיד</td></tr>
+    <tr class="in" style="--d:2.2s"><td><span class="tag" style="background:#ef6c00;margin:0">PUT</span></td><td class="ltr" style="text-align:left"><code>api/users/5/password</code></td><td>שינוי סיסמה</td></tr>
+    <tr class="in" style="--d:2.5s"><td><span class="tag" style="background:#c62828;margin:0">DELETE</span></td><td class="ltr" style="text-align:left"><code>api/users/5</code></td><td>מחיקה</td></tr>
+  </table>
+  <div class="remember in" style="--d:3.0s;bottom:30px"><b>לזכור:</b> GET שולף, POST יוצר או שולח נתונים, PUT מעדכן, DELETE מוחק. ‏<code>{id:int}</code> בנתיב מקבל רק מספר שלם.</div>
+</section>
+
+<!-- 17 -->
+<section class="slide">
+  <h2>קודי תשובה (Status Codes)</h2>
+  <p class="sub">כל תשובה של ה-API מגיעה עם מספר שאומר מה קרה</p>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+    <div class="card pop" style="--d:.2s;border-top:6px solid var(--ok)"><div style="font-size:34px;font-weight:800">200</div><code>Ok</code><br>הצליח, ויש תוכן. למשל כניסה מוצלחת</div>
+    <div class="card pop" style="--d:.5s;border-top:6px solid var(--ok)"><div style="font-size:34px;font-weight:800">201</div><code>CreatedAtAction</code><br>נוצר משתמש חדש בהרשמה</div>
+    <div class="card pop" style="--d:.8s;border-top:6px solid var(--ok)"><div style="font-size:34px;font-weight:800">204</div><code>NoContent</code><br>העדכון הצליח, אין מה להחזיר</div>
+    <div class="card pop" style="--d:1.1s;border-top:6px solid var(--bad)"><div style="font-size:34px;font-weight:800">400</div><code>BadRequest</code><br>בקשה שגויה, למשל תפקיד שלא קיים</div>
+    <div class="card pop" style="--d:1.4s;border-top:6px solid var(--bad)"><div style="font-size:34px;font-weight:800">401</div><code>Unauthorized</code><br>שם משתמש או סיסמה שגויים</div>
+    <div class="card pop" style="--d:1.7s;border-top:6px solid var(--bad)"><div style="font-size:34px;font-weight:800">404</div><code>NotFound</code><br>אין משתמש עם המזהה הזה</div>
+    <div class="card pop" style="--d:2.0s;border-top:6px solid var(--bad)"><div style="font-size:34px;font-weight:800">409</div><code>Conflict</code><br>שם המשתמש או האימייל תפוסים</div>
+    <div class="card pop" style="--d:2.3s;background:#fff8e1"><b>הכלל</b><br>2xx: הצליח<br>4xx: הבעיה בבקשה<br>5xx: תקלה בשרת</div>
+  </div>
+  <div class="remember in" style="--d:2.8s"><b>לזכור:</b> ה-View בודק את הקוד: ב-Login, אם התקבל 401 מוצגת ההודעה "שם המשתמש או הסיסמה שגויים".</div>
+</section>
+
+<!-- 18 -->
+<section class="slide">
+  <h2>JSON: איך עצם עובר ברשת</h2>
+  <p class="sub">ברשת עובר רק טקסט. עצם User הופך לטקסט JSON ובצד השני חוזר להיות עצם</p>
+  <div class="row" style="align-items:center;margin-top:20px">
+    <div class="col card pop" style="--d:.2s;text-align:center"><b class="c-api">API</b><div class="code ltr" style="margin-top:8px;font-size:17px;text-align:left">User user<br>Id = 1<br>Username = "admin"<br>RoleName = "Admin"</div></div>
+    <div class="in" style="width:70px;text-align:center;font-size:34px;--d:.8s">←</div>
+    <div class="col" style="flex:1.4"><pre class="pop" style="--d:1.2s;font-size:16px">{
+  <span class="s">"id"</span>: 1,
+  <span class="s">"username"</span>: <span class="s">"admin"</span>,
+  <span class="s">"email"</span>: <span class="s">"admin@example.com"</span>,
+  <span class="s">"password"</span>: <span class="s">""</span>,
+  <span class="s">"roleName"</span>: <span class="s">"Admin"</span>, ...
+}</pre><div class="in" style="--d:1.6s;text-align:center;color:var(--muted);font-size:16px;margin-top:4px">טקסט שעובר ברשת</div></div>
+    <div class="in" style="width:70px;text-align:center;font-size:34px;--d:1.8s">←</div>
+    <div class="col card pop" style="--d:2.2s;text-align:center"><b class="c-view">View</b><div class="code ltr" style="margin-top:8px;font-size:17px;text-align:left">User? user =<br>ReadFromJsonAsync<br>&lt;User&gt;()</div></div>
+  </div>
+  <ul class="pts" style="margin-top:26px;font-size:20px">
+    <li class="in" style="--d:2.8s">‏<code>return Ok(user)</code> ב-API הופך את העצם ל-JSON לבד.</li>
+    <li class="in" style="--d:3.1s">שני הצדדים מכירים את המחלקה <code>User</code> מ-Model, ולכן אפשר להמיר בחזרה.</li>
+    <li class="in" style="--d:3.4s">‏<code>"password": ""</code>: ה-API מרוקן את הסיסמה לפני השליחה. הסיסמה לא יוצאת מהשרת.</li>
+  </ul>
+</section>
+
+<!-- 19 -->
+<section class="slide">
+  <h2>Program.cs של ה-API</h2>
+  <p class="sub">כאן מגדירים את השרת לפני שהוא מתחיל לקבל בקשות</p>
+  <div class="row">
+    <div class="col" style="flex:1.35"><pre style="font-size:15.5px"><span class="flash" style="--d:.4s"><span class="k">var</span> builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();</span>
+
+<span class="flash" style="--d:1.3s"><span class="k">string</span>? serverConnectionString =
+    builder.Configuration.GetConnectionString(<span class="s">"DefaultConnection"</span>);</span>
+<span class="k">string</span> dbConnectionString = serverConnectionString + <span class="s">"Database=MyProjectDB;"</span>;
+
+<span class="flash" style="--d:2.2s">builder.Services.AddSingleton(<span class="k">new</span> DAL.UserDB(dbConnectionString));</span>
+
+<span class="flash" style="--d:3.1s"><span class="k">var</span> app = builder.Build();
+<span class="k">await</span> DAL.DatabaseInitializer.InitializeAsync(serverConnectionString);</span>
+
+<span class="flash" style="--d:4.0s">app.MapControllers();
+<span class="k">await</span> app.RunAsync();</span></pre></div>
+    <div class="col" style="font-size:18px">
+      <div class="card in" style="--d:.4s;margin-bottom:8px"><b>1.</b> יוצרים את השרת ומוסיפים בקרים</div>
+      <div class="card in" style="--d:1.3s;margin-bottom:8px"><b>2.</b> קוראים את מחרוזת החיבור מההגדרות</div>
+      <div class="card in" style="--d:2.2s;margin-bottom:8px"><b>3.</b> רושמים את UserDB: עצם אחד לכל השרת</div>
+      <div class="card in" style="--d:3.1s;margin-bottom:8px"><b>4.</b> בונים, ומכינים את בסיס הנתונים</div>
+      <div class="card in" style="--d:4.0s"><b>5.</b> מחברים את הבקרים לכתובות ומפעילים</div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:4.6s;bottom:30px"><b>הזרקת תלויות:</b> רושמים את <code>UserDB</code> פעם אחת, וכל בקר שמבקש אותו בבנאי מקבל אותו אוטומטית.</div>
+</section>
+
+<!-- 20 -->
+<section class="slide">
+  <h2>הגדרות וסודות</h2>
+  <p class="sub">כתובות ומחרוזות חיבור לא כותבים בתוך הקוד</p>
+  <div class="row" style="align-items:stretch">
+    <div class="col card in" style="--d:.2s"><b>appsettings.json</b><br>הגדרות שלא סודיות. ב-View:<pre style="font-size:15px;margin-top:8px"><span class="s">"ApiBaseUrl"</span>: <span class="s">"http://localhost:5214/"</span></pre><div style="margin-top:8px">נשמר ב-GitHub.</div></div>
+    <div class="col card in" style="--d:.8s"><b>User Secrets</b><br>סודות, במחשב של המפתח בלבד. ב-API:<pre style="font-size:15px;margin-top:8px">ConnectionStrings:DefaultConnection</pre><div style="margin-top:8px"><b style="color:var(--bad)">לא</b> נשמר ב-GitHub.</div></div>
+  </div>
+  <div class="row" style="margin-top:22px;font-size:19px">
+    <div class="col card in" style="--d:1.4s"><b>איך פותחים את User Secrets</b><br>לחיצה ימנית על פרויקט ה-API, ואז <b>Manage User Secrets</b>. נפתח קובץ <code>secrets.json</code> שנמצא מחוץ לתיקיית הפרויקט.</div>
+    <div class="col card in" style="--d:2.0s"><b>למה זה חשוב</b><br>במחרוזת החיבור יש סיסמה של בסיס הנתונים. אם היא תעלה ל-GitHub, כל מי שרואה את המאגר יכול להשתמש בה.</div>
+  </div>
+  <div class="remember in" style="--d:2.6s"><b>לזכור:</b> הקוד קורא <code>GetConnectionString("DefaultConnection")</code> ולא יודע מאיפה הערך הגיע. ‏<code>ApiBaseUrl</code> נמצא ב-View, ומחרוזת החיבור נמצאת רק ב-API.</div>
+</section>
+
+<!-- 21 -->
+<section class="slide">
+  <h2><span class="c-view">View</span>: Blazor Server</h2>
+  <p class="sub">קובץ <code>.razor</code> = HTML למעלה + קוד C# בתוך <code>@code</code></p>
+  <div class="row">
+    <div class="col in" style="--d:.2s"><pre style="font-size:16px"><span class="c">@page "/login"</span>
+<span class="c">@inject HttpClient Http</span>
+<span class="c">@inject UserSession Session</span>
+
+&lt;input <span class="t">@bind</span>=<span class="s">"username"</span> /&gt;
+&lt;input type=<span class="s">"password"</span> <span class="t">@bind</span>=<span class="s">"password"</span> /&gt;
+&lt;button <span class="t">@onclick</span>=<span class="s">"LoginAsync"</span>&gt;כניסה&lt;/button&gt;
+
+<span class="k">@code</span> {
+    <span class="k">private string</span>? username;
+    <span class="k">private string</span>? password;
+    <span class="k">private async</span> Task LoginAsync() { ... }
+}</pre></div>
+    <div class="col" style="font-size:18px">
+      <div class="card in" style="--d:.7s;margin-bottom:8px"><code>@page</code>: הכתובת של הדף</div>
+      <div class="card in" style="--d:1.1s;margin-bottom:8px"><code>@inject</code>: מקבלים שירות שנרשם ב-Program.cs</div>
+      <div class="card in" style="--d:1.5s;margin-bottom:8px"><code>@bind</code>: מה שמוקלד נכנס למשתנה, ולהפך</div>
+      <div class="card in" style="--d:1.9s"><code>@onclick</code>: לחיצה מפעילה פעולה ב-C#</div>
+    </div>
+  </div>
+  <div class="flow in" style="--d:2.4s;margin-top:18px">
+    <div class="node" style="background:#455a64">דפדפן<small>לחיצה</small></div>
+    <div class="link"><div class="dot go" style="background:var(--view);--d:2.9s"></div><div class="dot back" style="background:var(--ok);--d:4.1s"></div></div>
+    <div class="node b-view">שרת ה-View<small>מריץ את ה-C# ומחזיר רק את השינוי במסך</small></div>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide">
+  <h2>HttpClient: ה-View מדבר עם ה-API</h2>
+  <p class="sub">ה-View לא מכיר את DAL. כל מידע מגיע בבקשת HTTP ל-API</p>
+  <div class="row">
+    <div class="col" style="flex:1.35">
+      <div class="in" style="--d:.2s;font-size:17px;margin-bottom:4px">הכתובת של ה-API, בקובץ <b><bdi>Program.cs</bdi></b> של ה-View</div>
+      <pre class="in" style="--d:.3s;font-size:15px">builder.Services.AddScoped(sp =&gt; <span class="k">new</span> HttpClient
+    { BaseAddress = <span class="k">new</span> Uri(apiBaseUrl) });</pre>
+      <div class="in" style="--d:.9s;font-size:17px;margin:12px 0 4px">שליחה וקבלה, בקובץ <b><bdi>Login.razor</bdi></b></div>
+      <pre style="font-size:15px"><span class="flash" style="--d:1.3s">User credentials = <span class="k">new</span> User { Username = ..., Password = password };
+HttpResponseMessage response =
+    <span class="k">await</span> Http.PostAsJsonAsync(<span class="s">"api/users/login"</span>, credentials);</span>
+
+<span class="flash" style="--d:2.4s"><span class="k">if</span> (response.StatusCode == HttpStatusCode.Unauthorized)
+{
+    errorMessage = <span class="s">"שם המשתמש או הסיסמה שגויים."</span>;
+    <span class="k">return</span>;
+}</span>
+
+<span class="flash" style="--d:3.5s">User? user = <span class="k">await</span> response.Content.ReadFromJsonAsync&lt;User&gt;();</span></pre>
+    </div>
+    <div class="col" style="font-size:18px;padding-top:20px">
+      <div class="card in" style="--d:.5s;margin-bottom:10px">‏<code>BaseAddress</code> + <code>"api/users/login"</code> = הכתובת המלאה</div>
+      <div class="card in" style="--d:1.3s;margin-bottom:10px"><b>שולחים</b>: העצם הופך ל-JSON בגוף הבקשה</div>
+      <div class="card in" style="--d:2.4s;margin-bottom:10px"><b>בודקים</b> את קוד התשובה</div>
+      <div class="card in" style="--d:3.5s;margin-bottom:10px"><b>קוראים</b>: JSON חוזר להיות User</div>
+      <div class="card in" style="--d:4.2s;background:#fff8e1">‏<code>catch (HttpRequestException)</code>: ה-API לא זמין, מציגים הודעה במקום קריסה</div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide">
+  <h2>UserSession: מי מחובר עכשיו</h2>
+  <p class="sub">שירות ב-View שזוכר את המשתמש המחובר, וכל הדפים יכולים לקרוא ממנו</p>
+  <div class="row">
+    <div class="col in" style="--d:.2s"><pre style="font-size:15.5px"><span class="k">public class</span> <span class="t">UserSession</span>
+{
+    <span class="k">public int</span> UserId { <span class="k">get</span>; <span class="k">private set</span>; }
+    <span class="k">public string</span> Username { <span class="k">get</span>; <span class="k">private set</span>; }
+    <span class="k">public string</span> RoleName { <span class="k">get</span>; <span class="k">private set</span>; }
+    <span class="k">public bool</span> IsLoggedIn =&gt; UserId &gt; 0;
+
+    <span class="k">public event</span> Action? OnChange;
+
+    <span class="k">public void</span> Login(User user) { ... }
+    <span class="k">public void</span> Logout() { ... }
+}</pre></div>
+    <div class="col" style="font-size:18px">
+      <div class="card in" style="--d:.7s;margin-bottom:9px"><code>AddScoped</code>: עותק נפרד לכל משתמש שמחובר לאתר. דנה ויוסי לא רואים זה את זה.</div>
+      <div class="card in" style="--d:1.2s;margin-bottom:9px"><code>private set</code>: אפשר לשנות רק דרך <code>Login</code> ו-<code>Logout</code>.</div>
+      <div class="card in" style="--d:1.7s;margin-bottom:9px"><code>OnChange</code>: אירוע. התפריט נרשם אליו ומתעדכן כשמישהו נכנס או יוצא.</div>
+      <div class="card in" style="--d:2.2s">‏<code>RoleName</code>: לפיו כל דף מחליט מה להציג למשתמש.</div>
+    </div>
+  </div>
+  <div class="flow in" style="--d:2.7s;margin-top:18px">
+    <div class="node b-view">Login.razor<small>Session.Login(user)</small></div>
+    <div class="link"><div class="dot go" style="background:var(--view);--d:3.1s"></div></div>
+    <div class="node b-view">UserSession<small>שומר + OnChange</small></div>
+    <div class="link"><div class="dot go" style="background:var(--view);--d:4.1s"></div></div>
+    <div class="node b-view">MainLayout<small>"שלום, admin"</small></div>
+  </div>
+</section>
+
+<!-- 24 -->
+<section class="slide">
+  <h2>סיסמאות: גיבוב עם BCrypt</h2>
+  <p class="sub">בבסיס הנתונים לא שומרים את הסיסמה עצמה, אלא גיבוב שלה</p>
+  <div style="font-size:19px;font-weight:700;margin-bottom:8px">בהרשמה: <code>AddUserAsync</code></div>
+  <div class="flow">
+    <div class="node pop" style="--d:.2s;background:#455a64" ><span class="code">"1234"</span><small>הסיסמה שהוקלדה</small></div>
+    <div class="link"><div class="dot go" style="background:#ffca28;--d:.8s"></div></div>
+    <div class="node pop" style="--d:.5s;background:#6a1b9a">BCrypt.HashPassword<small>+ מלח אקראי</small></div>
+    <div class="link"><div class="dot go" style="background:#ffca28;--d:1.8s"></div></div>
+    <div class="node pop b-db" style="--d:2.6s;min-width:260px"><span class="code" style="font-size:15px">$2a$11$Kq9fX…e8w</span><small>נשמר ב-PasswordHash</small></div>
+  </div>
+  <div style="font-size:19px;font-weight:700;margin:26px 0 8px">בכניסה: <code>CheckLoginAsync</code></div>
+  <div class="flow">
+    <div class="node pop" style="--d:3.3s;background:#455a64"><span class="code">"1234"</span><small>הוקלד עכשיו</small></div>
+    <div class="link"><div class="dot go" style="background:#ffca28;--d:3.9s"></div></div>
+    <div class="node pop" style="--d:3.6s;background:#6a1b9a">BCrypt.Verify<small>אותו מלח מתוך הגיבוב</small></div>
+    <div class="link"><div class="dot go" style="background:#ffca28;--d:4.9s"></div></div>
+    <div class="node pop" style="--d:5.7s;background:var(--ok);min-width:200px">✓ זהה<small>מחזירים את המשתמש</small></div>
+  </div>
+  <div class="remember in" style="--d:6.2s"><b>לזכור:</b> גיבוב הוא חד כיווני: אי אפשר לחזור ממנו לסיסמה. לכן משווים בקוד עם <code>Verify</code>, ולא בשאילתת SQL.</div>
+</section>
+
+<!-- 25 -->
+<section class="slide">
+  <h2>הכול ביחד: כניסה למערכת מקצה לקצה</h2>
+  <p class="sub">מה קורה מהלחיצה על "כניסה" ועד שמופיע "שלום, admin"</p>
+  <div class="flow" style="margin-top:6px">
+    <div class="node" style="background:#455a64;min-width:120px">דפדפן</div>
+    <div class="link"><div class="dot go" style="background:#455a64;--d:.6s;--t:.8s"></div><div class="dot back" style="background:var(--ok);--d:7.6s;--t:.8s"></div></div>
+    <div class="node b-view" style="min-width:140px">View<small>Login.razor</small></div>
+    <div class="link"><div class="dot go" style="background:var(--view);--d:1.6s;--t:.8s"></div><div class="dot back" style="background:var(--ok);--d:6.4s;--t:.8s"></div></div>
+    <div class="node b-api" style="min-width:140px">API<small>UsersController</small></div>
+    <div class="link"><div class="dot go" style="background:var(--api);--d:2.6s;--t:.8s"></div><div class="dot back" style="background:var(--ok);--d:5.4s;--t:.8s"></div></div>
+    <div class="node b-dal" style="min-width:140px">DAL<small>UserDB</small></div>
+    <div class="link"><div class="dot go" style="background:var(--dal);--d:3.6s;--t:.8s"></div><div class="dot back" style="background:var(--ok);--d:4.4s;--t:.8s"></div></div>
+    <div class="node b-db" style="min-width:120px">MySQL</div>
+  </div>
+  <div class="row" style="margin-top:22px;font-size:17px">
+    <div class="col">
+      <div class="card in" style="--d:.6s;margin-bottom:7px"><b>1.</b> המשתמש לוחץ "כניסה". ‏<code>@onclick</code> מפעיל את <code>LoginAsync</code></div>
+      <div class="card in" style="--d:1.6s;margin-bottom:7px"><b>2.</b> <code>PostAsJsonAsync("api/users/login")</code> עם JSON</div>
+      <div class="card in" style="--d:2.6s;margin-bottom:7px"><b>3.</b> הבקר קורא ל-<code>userDB.CheckLoginAsync</code></div>
+      <div class="card in" style="--d:3.6s"><b>4.</b> ‏SELECT עם JOIN ופרמטר <code>@Username</code></div>
+    </div>
+    <div class="col">
+      <div class="card in" style="--d:4.4s;margin-bottom:7px"><b>5.</b> חוזרת שורה. ‏<code>ReadUser</code> יוצר User, ו-<code>Verify</code> בודק סיסמה</div>
+      <div class="card in" style="--d:5.4s;margin-bottom:7px"><b>6.</b> הבקר מרוקן את הסיסמה ומחזיר <code>Ok(user)</code>: ‏200 + JSON</div>
+      <div class="card in" style="--d:6.4s;margin-bottom:7px"><b>7.</b> ‏<code>ReadFromJsonAsync&lt;User&gt;</code> ואז <code>Session.Login(user)</code></div>
+      <div class="card in" style="--d:7.6s"><b>8.</b> ‏<code>OnChange</code> מעדכן את התפריט, ועוברים לדף הבית</div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:8.6s;bottom:30px"><b>שאלה למבחן:</b> סיסמה שגויה. באיזה שלב זה מתגלה, איזה קוד תשובה חוזר, ומה המשתמש רואה?</div>
+</section>
+
+<!-- 26 -->
+<section class="slide cover" style="background:linear-gradient(135deg,#141a2b 0%,#1e2a4a 60%,#2b2350 100%);color:#fff;padding:0">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+    <div style="display:flex;gap:14px;margin-bottom:40px">
+      <div class="pop" style="--d:.1s;width:70px;height:14px;border-radius:7px;background:var(--view)"></div>
+      <div class="pop" style="--d:.3s;width:70px;height:14px;border-radius:7px;background:var(--api)"></div>
+      <div class="pop" style="--d:.5s;width:70px;height:14px;border-radius:7px;background:var(--dal)"></div>
+      <div class="pop" style="--d:.7s;width:70px;height:14px;border-radius:7px;background:var(--model)"></div>
+    </div>
+    <h1 class="in" style="--d:.9s;font-size:96px;margin:0;font-weight:800">תודה רבה</h1>
+  </div>
+</section>
+
+</div>
+
+<div id="nav">
+  <button id="prev">הקודם ▶</button>
+  <button id="replay">↻ הפעל שוב</button>
+  <button id="next">◀ הבא</button>
+</div>
+
+<script>
+(function(){
+  var slides = document.querySelectorAll('.slide');
+  var stage = document.getElementById('stage');
+  var bar = document.getElementById('bar');
+  var current = 0;
+
+  slides.forEach(function(s, i){
+    var n = document.createElement('div');
+    n.className = 'num';
+    n.textContent = (i + 1) + ' / ' + slides.length;
+    s.appendChild(n);
+  });
+
+  function fit(){
+    var scale = Math.min(window.innerWidth / 1320, (window.innerHeight - 50) / 760);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
+    stage.style.marginTop = '-15px';
+  }
+
+  function show(i){
+    if (i < 0 || i >= slides.length) { return; }
+    slides[current].classList.remove('active');
+    current = i;
+    var s = slides[current];
+    void s.offsetWidth;
+    s.classList.add('active');
+    bar.style.width = ((current + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#' + (current + 1)); } catch (e) {}
+  }
+
+  function replay(){
+    var s = slides[current];
+    s.classList.remove('active');
+    void s.offsetWidth;
+    s.classList.add('active');
+  }
+
+  document.getElementById('next').onclick = function(){ show(current + 1); };
+  document.getElementById('prev').onclick = function(){ show(current - 1); };
+  document.getElementById('replay').onclick = replay;
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(current + 1); }
+    if (e.key === 'ArrowRight' || e.key === 'PageUp') { e.preventDefault(); show(current - 1); }
+    if (e.key === 'r' || e.key === 'R' || e.key === 'ר') { replay(); }
+    if (e.key === 'Home') { show(0); }
+    if (e.key === 'End') { show(slides.length - 1); }
+  });
+
+  window.addEventListener('resize', fit);
+  fit();
+  var start = parseInt((location.hash || '#1').slice(1), 10) - 1;
+  if (isNaN(start)) { start = 0; }
+  slides[0].classList.add('active');
+  show(start);
+})();
+</script>
+</body>
+</html>
