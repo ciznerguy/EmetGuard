@@ -49,6 +49,14 @@
 | [Bootstrap לעומק, עם דוגמאות מהאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) | 4 |
 | [פביקון: מה זה, איך יוצרים ואיך מעלים לאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) | 4 |
 
+### מצגת: חלקי הפרויקט (הכנה למבחן)
+
+ארבע השכבות של הפרויקט, תפקיד כל אחת ואיך הן מדברות זו עם זו, לפי שלבים 1-9. המצגת כוללת הנפשות.
+
+[להורדת המצגת](https://github.com/ciznerguy/EmetGuard/releases/download/v7/project-parts-presentation.html)
+
+אחרי ההורדה פותחים את הקובץ בדפדפן. מעבר בין שקפים בחיצים במקלדת או בכפתורים בתחתית המסך.
+
 ### סרטון: איך עובדים עם הגיט של EmetGuard
 
 סרטון קצר, בלי קול: הדף הראשי, מעבר בין הגרסאות, המדריך של כל גרסה והנספחים.
