@@ -28,6 +28,9 @@ namespace EmetGuardView
             // עצם אחד לכל חיבור של דפדפן, וכל הדפים באותה לשונית מקבלים את אותו עצם
             builder.Services.AddScoped<EmetGuardView.Services.UserSession>();
 
+            // נוסף בהעשרה: Website Hosting. השירות שמעיר את שרת ה-API ואת בסיס הנתונים כשהם כבויים
+            builder.Services.AddScoped<EmetGuardView.Services.ServerWakeService>();
+
             var app = builder.Build();
 
             // מחוץ לסביבת הפיתוח: שגיאה לא צפויה מעבירה לדף השגיאה, בלי לחשוף פרטים טכניים למשתמש

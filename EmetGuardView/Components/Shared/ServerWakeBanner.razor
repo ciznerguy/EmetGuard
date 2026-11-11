@@ -1,0 +1,133 @@
+@* נוסף בהעשרה: Website Hosting.
+   מסגרת שמופיעה בראש דף הבית רק כששרת ה-API לא עונה.
+   לחיצה על הכפתור מדליקה את בסיס הנתונים ב-Aiven, אם הוא כבוי, ומעירה את שרת ה-API. *@
+@inject ServerWakeService WakeService
+
+@if (!isChecking && !apiAwake)
+{
+    <div class="container mt-4">
+        <div class="alert alert-warning shadow-sm" role="alert">
+            <h5 class="alert-heading fw-bold">שרת ה-API ובסיס הנתונים לא פעילים</h5>
+            <p class="mb-3">
+                האתר עובד בתוכנית חינמית, והשרתים נכבים כשלא משתמשים בהם.
+                בלי שרת ה-API אי אפשר להירשם או להיכנס. ההפעלה לוקחת בין דקה לכמה דקות.
+            </p>
+
+            @if (isWaking)
+            {
+                <div class="d-flex align-items-center gap-2">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span>@progressMessage</span>
+                </div>
+            }
+            else
+            {
+                <button class="btn btn-warning fw-semibold" @onclick="WakeAsync">הפעל את שרת ה-API ואת בסיס הנתונים</button>
+            }
+
+            @if (errorMessage != null)
+            {
+                <p class="text-danger mt-3 mb-0">@errorMessage</p>
+            }
+        </div>
+    </div>
+}
+
+@if (showSuccess)
+{
+    <div class="container mt-4">
+        <div class="alert alert-success shadow-sm" role="alert">שרת ה-API ובסיס הנתונים פעילים. אפשר להירשם ולהיכנס.</div>
+    </div>
+}
+
+@code {
+    private bool isChecking = true;
+    private bool apiAwake;
+    private bool isWaking;
+    private bool showSuccess;
+    private string? progressMessage;
+    private string? errorMessage;
+
+    // בדיקה קצרה כשהדף נטען. אם ה-API לא עונה תוך חמש שניות, מוצגת המסגרת עם הכפתור
+    protected override async Task OnInitializedAsync()
+    {
+        apiAwake = await WakeService.IsApiAwakeAsync(5);
+        isChecking = false;
+    }
+
+    private async Task WakeAsync()
+    {
+        isWaking = true;
+        errorMessage = null;
+
+        try
+        {
+            // שלב 1: בסיס הנתונים. שרת ה-API מתחבר אליו כשהוא עולה, ולכן מדליקים אותו קודם
+            if (WakeService.CanWakeDatabase())
+            {
+                await ShowProgressAsync("בודק את בסיס הנתונים...");
+                string state = await WakeService.GetDatabaseStateAsync();
+
+                if (state != "RUNNING")
+                {
+                    await ShowProgressAsync("בסיס הנתונים כבוי. מדליק אותו...");
+                    await WakeService.PowerOnDatabaseAsync();
+
+                    // בודקים כל עשר שניות, עד עשר דקות
+                    int seconds = 0;
+                    while (state != "RUNNING" && seconds < 600)
+                    {
+                        await ShowProgressAsync($"בסיס הנתונים עולה... ({seconds} שניות)");
+                        await Task.Delay(10000);
+                        seconds = seconds + 10;
+                        state = await WakeService.GetDatabaseStateAsync();
+                    }
+
+                    if (state != "RUNNING")
+                    {
+                        errorMessage = "בסיס הנתונים לא עלה בזמן. נסו שוב בעוד כמה דקות.";
+                        return;
+                    }
+                }
+            }
+
+            // שלב 2: שרת ה-API. כל בקשה אליו מעירה אותו, ומחכים עד שהוא עונה
+            int attempt = 1;
+            while (!apiAwake && attempt <= 6)
+            {
+                await ShowProgressAsync($"מעיר את שרת ה-API... (ניסיון {attempt} מתוך 6)");
+                apiAwake = await WakeService.IsApiAwakeAsync(60);
+                if (!apiAwake)
+                {
+                    await Task.Delay(10000);
+                }
+                attempt = attempt + 1;
+            }
+
+            if (apiAwake)
+            {
+                showSuccess = true;
+            }
+            else
+            {
+                errorMessage = "שרת ה-API לא עלה. ייתכן שצריך להפעיל אותו מחדש ב-Render.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "לא הצלחנו לפנות לשרת של בסיס הנתונים. נסו שוב בעוד רגע.";
+        }
+        finally
+        {
+            isWaking = false;
+        }
+    }
+
+    // מעדכן את ההודעה על המסך באמצע הפעולה, בלי לחכות שהיא תסתיים
+    private async Task ShowProgressAsync(string message)
+    {
+        progressMessage = message;
+        StateHasChanged();
+        await Task.Yield();
+    }
+}
