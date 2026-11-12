@@ -53,6 +53,18 @@ namespace EmetGuardView.Services
         }
 
         /// <summary>
+        /// הכתובת המלאה של בקשת הבדיקה ל-API. הדפדפן של המשתמש שולח אליה בקשה כדי להעיר את השרת
+        /// </summary>
+        public string GetApiCheckUrl()
+        {
+            if (http.BaseAddress == null)
+            {
+                return string.Empty;
+            }
+            return new Uri(http.BaseAddress, "api/users/exists/admin").ToString();
+        }
+
+        /// <summary>
         /// האם אפשר להדליק את בסיס הנתונים: רק אם הוגדרו הכתובת והמפתח של Aiven
         /// </summary>
         public bool CanWakeDatabase()

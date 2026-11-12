@@ -2,6 +2,7 @@
    מסגרת שמופיעה בראש דף הבית רק כששרת ה-API לא עונה.
    לחיצה על הכפתור מדליקה את בסיס הנתונים ב-Aiven, אם הוא כבוי, ומעירה את שרת ה-API. *@
 @inject ServerWakeService WakeService
+@inject IJSRuntime JS
 
 @if (!isChecking && !apiAwake)
 {
@@ -53,6 +54,38 @@
     {
         apiAwake = await WakeService.IsApiAwakeAsync(5);
         isChecking = false;
+
+        // אם ה-API ישן, מתחילים להעיר אותו כבר עכשיו, עוד לפני הלחיצה
+        if (!apiAwake)
+        {
+            await WakeApiFromBrowserAsync();
+        }
+    }
+
+    // Render מעיר שירות ישן רק כשמגיעה אליו בקשה מבחוץ.
+    // בקשה מהשרת של האתר לא מעירה אותו, ולכן הדפדפן של המשתמש שולח את הבקשה.
+    // לא מחכים לתשובה: הדפדפן ממשיך לחכות לבד, והשרת בודק בנפרד מתי ה-API עונה
+    private async Task WakeApiFromBrowserAsync()
+    {
+        string url = WakeService.GetApiCheckUrl();
+        if (url == string.Empty)
+        {
+            return;
+        }
+
+        using CancellationTokenSource timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        try
+        {
+            await JS.InvokeVoidAsync("fetch", timeout.Token, url, new { mode = "no-cors", cache = "no-store" });
+        }
+        catch (TaskCanceledException)
+        {
+            // הבקשה עדיין רצה בדפדפן. זה המצב הרגיל כשה-API ישן
+        }
+        catch (JSException)
+        {
+            // הדפדפן לא הצליח לשלוח את הבקשה. השרת ימשיך לבדוק בכל זאת
+        }
     }
 
     private async Task WakeAsync()
@@ -96,6 +129,7 @@
             while (!apiAwake && attempt <= 6)
             {
                 await ShowProgressAsync($"מעיר את שרת ה-API... (ניסיון {attempt} מתוך 6)");
+                await WakeApiFromBrowserAsync();
                 apiAwake = await WakeService.IsApiAwakeAsync(60);
                 if (!apiAwake)
                 {
