@@ -36,10 +36,13 @@ namespace EmetGuardView.Services
         /// </summary>
         public async Task<bool> IsApiAwakeAsync(int timeoutSeconds)
         {
-            using CancellationTokenSource timeout = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+            // כל בדיקה פותחת חיבור חדש. חיבור שנפתח בזמן שהשרת ישן יכול להיתקע,
+            // ואז גם הבדיקות הבאות דרכו נכשלות, אפילו אחרי שהשרת התעורר
+            using HttpClient checkClient = new HttpClient();
+            checkClient.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
             try
             {
-                HttpResponseMessage response = await http.GetAsync("api/users/exists/admin", timeout.Token);
+                HttpResponseMessage response = await checkClient.GetAsync(GetApiCheckUrl());
                 return response.IsSuccessStatusCode;
             }
             catch (HttpRequestException)
