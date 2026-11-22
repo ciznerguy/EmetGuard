@@ -31,8 +31,8 @@
 
 | נושא | מה לומדים | מדריך |
 |---|---|---|
-| Remote DB | בסיס נתונים MySQL בענן (Aiven), ובחירה בקוד בין השרת המקומי לשרת בענן | [מדריך Remote DB](https://github.com/ciznerguy/EmetGuard/releases/download/v11/v11-cloud-database-guide.pdf) |
-| Website Hosting | פרסום האתר באינטרנט ב-Render עם Docker. האתר של פרויקט הדוגמה: [emetguard.onrender.com](https://emetguard.onrender.com) | [מדריך Website Hosting](https://github.com/ciznerguy/EmetGuard/releases/download/v12/v12-render-deploy-guide.pdf) |
+| Remote DB | בסיס נתונים MySQL בענן (Aiven), ובחירה בקוד בין השרת המקומי לשרת בענן | [מדריך Remote DB](enrichment/remote-db-guide.pdf) |
+| Website Hosting | פרסום האתר באינטרנט ב-Render עם Docker. האתר של פרויקט הדוגמה: [emetguard.onrender.com](https://emetguard.onrender.com) | [מדריך Website Hosting](enrichment/website-hosting-guide.pdf) |
 
 ## נספחים
 
