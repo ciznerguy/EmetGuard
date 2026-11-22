@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מחלקת ולידציה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f6; --paper:#ffffff; --ink:#1d2433; --muted:#5b6578; --line:#d6dbe5;
+  --model:#7c4dff; --dal:#00897b; --api:#e65100; --view:#1e6fd9; --db:#5d4037;
+  --ok:#2e7d32; --bad:#c62828; --soft:#f4f6fa; --code:#1e2230;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);font-family:Heebo,Arial,sans-serif;color:var(--ink);overflow:hidden}
+#stage{position:absolute;width:1280px;height:720px;left:50%;top:50%;transform-origin:center center}
+.slide{position:absolute;inset:0;background:var(--paper);border-radius:14px;box-shadow:0 10px 40px rgba(20,30,60,.15);padding:46px 60px 40px;display:none;overflow:hidden}
+.slide.active{display:block}
+.slide h2{margin:0 0 6px;font-size:38px;font-weight:800}
+.slide .sub{color:var(--muted);font-size:20px;margin:0 0 22px}
+.cover .num{color:#8f9bb8}
+.num{position:absolute;left:28px;bottom:18px;color:var(--muted);font-size:15px}
+.b-model{background:var(--model)} .b-dal{background:var(--dal)} .b-api{background:var(--api)} .b-view{background:var(--view)} .b-db{background:var(--db)}
+code{font-family:Consolas,"Courier New",monospace;background:var(--soft);padding:1px 6px;border-radius:5px;direction:ltr;unicode-bidi:isolate;font-size:.92em}
+pre{direction:ltr;text-align:left;background:var(--code);color:#e8ecf5;border-radius:10px;padding:16px 20px;font-size:17px;line-height:1.55;margin:0;white-space:pre;font-family:Consolas,"Courier New",monospace}
+pre .k{color:#7fb0ff} pre .s{color:#ffcf7a} pre .c{color:#7d8799} pre .t{color:#6fe0c8}
+pre .hl{display:inline-block;width:100%;border-radius:4px}
+.slide.active pre .hl.flash{animation-name:hlflash}
+@keyframes hlflash{0%{background:transparent}30%{background:rgba(127,176,255,.40)}100%{background:rgba(127,176,255,.14)}}
+.row{display:flex;gap:26px;align-items:flex-start}
+.col{flex:1}
+ul.pts{margin:0;padding:0 22px 0 0;font-size:22px;line-height:1.6}
+ul.pts li{margin-bottom:6px}
+.remember{position:absolute;right:60px;left:60px;bottom:46px;background:#fff8e1;border:2px solid #ffca28;border-radius:10px;padding:10px 18px;font-size:19px}
+.remember b{color:#b26a00}
+.card{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:14px 18px;font-size:19px;line-height:1.5}
+table.t{border-collapse:collapse;width:100%;font-size:20px}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:9px 12px;text-align:right}
+table.t th{background:var(--soft)}
+.yes{color:var(--ok);font-weight:700} .no{color:var(--bad);font-weight:700}
+
+/* אנימציות: מתחילות בכל פעם שהשקף נפתח */
+.slide.active .in{animation:fadeUp .6s both;animation-delay:var(--d,0s)}
+.slide.active .pop{animation:pop .5s both;animation-delay:var(--d,0s)}
+.slide.active .drop{animation:drop .7s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d,0s)}
+.slide.active .grow{animation:grow .7s both;animation-delay:var(--d,0s);transform-origin:right center}
+.slide.active .flash{animation:flash 1s both;animation-delay:var(--d,0s)}
+.slide.active .shake{animation:shake .5s both;animation-delay:var(--d,0s)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes drop{from{opacity:0;transform:translateY(-120px)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes flash{0%{background:transparent}30%{background:rgba(255,214,0,.45)}100%{background:rgba(255,214,0,.18)}}
+@keyframes shake{0%{opacity:0}20%{opacity:1;transform:translateX(0)}40%{transform:translateX(-10px)}60%{transform:translateX(10px)}80%{transform:translateX(-6px)}100%{opacity:1;transform:none}}
+
+/* זרימה */
+.flow{display:flex;align-items:center}
+.node{min-width:150px;padding:14px 12px;border-radius:12px;color:#fff;text-align:center;font-weight:700;font-size:19px;box-shadow:0 4px 12px rgba(0,0,0,.12);position:relative;z-index:2}
+.node small{display:block;font-weight:400;font-size:14px;opacity:.92}
+.link{flex:1;height:6px;background:var(--line);position:relative;margin:0 4px;border-radius:3px}
+.dot{position:absolute;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;opacity:0}
+.slide.active .dot.go{animation:goL var(--t,1s) linear both;animation-delay:var(--d,0s)}
+.slide.active .dot.stop{animation:goStop var(--t,1s) ease-out both;animation-delay:var(--d,0s)}
+@keyframes goL{0%{right:-10px;opacity:1}95%{opacity:1}100%{right:calc(100% - 10px);opacity:0}}
+@keyframes goStop{0%{right:-10px;opacity:1}100%{right:40%;opacity:1}}
+
+/* טופס מדומה */
+.form{width:420px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;box-shadow:0 6px 20px rgba(20,30,60,.08)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:16px;color:var(--muted);margin-bottom:4px}
+.field .box{border:2px solid var(--line);border-radius:8px;padding:7px 12px;font-size:19px;direction:ltr;text-align:right;font-family:Consolas,monospace;display:flex;justify-content:space-between;align-items:center}
+.field .mark{font-family:Heebo,Arial;font-weight:800;font-size:20px}
+.err{background:#fdecea;border:1px solid #f5c2bd;color:var(--bad);border-radius:8px;padding:8px 12px;font-size:17px}
+.okmsg{background:#e8f5e9;border:1px solid #b7dfb9;color:var(--ok);border-radius:8px;padding:8px 12px;font-size:17px}
+
+.big{font-size:26px;line-height:1.5}
+.pill{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:17px;color:#fff}
+
+/* ניווט */
+#nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10}
+#nav button{font-family:inherit;font-size:15px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 14px;cursor:pointer}
+#bar{position:fixed;top:0;right:0;height:4px;background:var(--model);transition:width .3s;z-index:10}
+@media print{#nav,#bar{display:none}}
+
+/* תצוגה בלי סקריפטים (למשל בתצוגה מקדימה של קבצים): כל השקפים אחד מתחת לשני, בלי אנימציות */
+html:not(.js),html:not(.js) body{overflow:auto;height:auto}
+html:not(.js) #stage{position:static;transform:none;margin:20px auto;height:auto}
+html:not(.js) .slide{display:block;position:relative;height:720px;margin-bottom:24px}
+html:not(.js) #nav,html:not(.js) #bar{display:none}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<div id="stage">
+
+<!-- 1 שער -->
+<section class="slide cover" style="background:linear-gradient(135deg,#141a2b 0%,#1e2a4a 60%,#2b2350 100%);color:#fff;padding:0">
+  <div style="position:absolute;right:80px;top:140px;width:600px">
+    <div class="in" style="--d:.2s;display:inline-block;border:1px solid rgba(255,255,255,.35);border-radius:20px;padding:4px 16px;font-size:18px;color:#c9d3ea">גרסה 11</div>
+    <h1 class="in" style="--d:.4s;font-size:64px;line-height:1.15;margin:22px 0 0;font-weight:800">מחלקת ולידציה</h1>
+    <div class="grow" style="--d:.9s;width:140px;height:6px;border-radius:3px;margin:26px 0;background:linear-gradient(90deg,var(--model),var(--view),var(--api))"></div>
+    <p class="in" style="--d:1.1s;font-size:30px;margin:0;font-weight:500">כללי תקינות שכתובים פעם אחת,<br>ונבדקים גם בדף וגם בשרת</p>
+    <p class="in" style="--d:1.5s;font-size:18px;margin:34px 0 0;color:#8f9bb8">כיתה יב · תשפ"ז · דוגמה: EmetGuard</p>
+  </div>
+  <div class="form" style="position:absolute;left:90px;top:150px;color:var(--ink)">
+    <div class="field in" style="--d:1.0s"><label>שם משתמש</label><div class="box"><span class="mark no pop" style="--d:2.2s">✗</span><span>ab</span></div></div>
+    <div class="field in" style="--d:1.2s"><label>אימייל</label><div class="box"><span class="mark no pop" style="--d:2.5s">✗</span><span>a@b</span></div></div>
+    <div class="field in" style="--d:1.4s"><label>סיסמה</label><div class="box"><span class="mark yes pop" style="--d:2.8s">✓</span><span>Secret2026</span></div></div>
+    <div class="err shake" style="--d:3.2s">שם המשתמש צריך להכיל בין 3 ל-20 תווים.</div>
+  </div>
+</section>
+
+<!-- 2 הבעיה -->
+<section class="slide">
+  <h2>הבעיה: רק הדף בודק</h2>
+  <p class="sub">עד גרסה 10 בדיקות הקלט של ההרשמה היו כתובות בתוך <code>Register.razor</code></p>
+  <div class="flow in" style="--d:.2s;margin-top:20px">
+    <div class="node" style="background:#455a64">משתמש</div>
+    <div class="link"><div class="dot stop" style="background:var(--bad);--d:1.2s;--t:.9s"></div></div>
+    <div class="node b-view">דף ההרשמה<small>בודק ✓</small></div>
+    <div class="link"></div>
+    <div class="node b-api">API<small>לא בודק</small></div>
+    <div class="link"></div>
+    <div class="node b-db">MySQL</div>
+  </div>
+  <p class="in" style="--d:2.1s;font-size:21px;margin:12px 0 26px;color:var(--ok)">מהדף: נתון שגוי נעצר. מצוין.</p>
+  <div class="flow in" style="--d:2.6s">
+    <div class="node" style="background:#37474f">קובץ http<small>או כל תוכנה אחרת</small></div>
+    <div class="link" style="flex:2.4"><div class="dot go" style="background:var(--bad);--d:3.4s;--t:1.4s"></div></div>
+    <div class="node b-api">API<small>לא בודק</small></div>
+    <div class="link"><div class="dot go" style="background:var(--bad);--d:4.8s;--t:.9s"></div></div>
+    <div class="node b-db shake" style="--d:5.7s">MySQL<small>נשמר! ✗</small></div>
+  </div>
+  <pre class="in" style="--d:3.0s;margin-top:22px;font-size:16px;display:inline-block">{ <span class="s">"username"</span>: <span class="s">"a"</span>, <span class="s">"email"</span>: <span class="s">"not-an-email"</span>, <span class="s">"password"</span>: <span class="s">"123"</span> }</pre>
+  <div class="remember in" style="--d:6.2s"><b>המסקנה:</b> את הדף אפשר לעקוף. מי ששולח בקשה ישירות ל-API שומר מה שהוא רוצה.</div>
+</section>
+
+<!-- 3 הפתרון -->
+<section class="slide">
+  <h2>הפתרון: מחלקה אחת, שני משתמשים</h2>
+  <p class="sub">כל הכללים עוברים למחלקה <code>UserValidator</code>. הדף וה-API קוראים לאותה מחלקה</p>
+  <div style="position:relative;height:380px;margin-top:10px">
+    <div class="node b-view pop" style="--d:.3s;position:absolute;right:60px;top:40px;width:260px">דף ההרשמה<small>Register.razor</small></div>
+    <div class="node b-api pop" style="--d:.6s;position:absolute;left:60px;top:40px;width:260px">ה-API<small>UsersController</small></div>
+    <div class="node b-model drop" style="--d:1.2s;position:absolute;left:50%;margin-left:-180px;top:220px;width:360px;font-size:24px">UserValidator<small>שכבת Model</small></div>
+    <svg width="1160" height="380" style="position:absolute;inset:0" class="in" viewBox="0 0 1160 380">
+      <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c4dff"/></marker></defs>
+      <path d="M 900 110 Q 860 200 720 240" stroke="#7c4dff" stroke-width="4" fill="none" stroke-dasharray="8 6" marker-end="url(#ar)"/>
+      <path d="M 260 110 Q 300 200 440 240" stroke="#7c4dff" stroke-width="4" fill="none" stroke-dasharray="8 6" marker-end="url(#ar)"/>
+    </svg>
+  </div>
+  <div class="row">
+    <div class="col card in" style="--d:1.8s"><b>כתוב פעם אחת</b><br>משנים כלל במקום אחד, והוא משתנה בכל המערכת.</div>
+    <div class="col card in" style="--d:2.1s"><b>אותם כללים בדיוק</b><br>אין מצב שהדף מאשר והשרת דוחה, או להפך.</div>
+    <div class="col card in" style="--d:2.4s"><b>קל לבדוק ולהסביר</b><br>כל הבדיקות בקובץ אחד, ולא מפוזרות בדפים.</div>
+  </div>
+</section>
+
+<!-- 4 איפה -->
+<section class="slide">
+  <h2>איפה המחלקה יושבת?</h2>
+  <p class="sub">היא צריכה להיות מוכרת גם לתצוגה וגם ל-API. נבדוק מי מכיר את מי</p>
+  <table class="t in" style="--d:.2s">
+    <tr><th>אם נשים אותה ב...</th><th>התצוגה מכירה?</th><th>ה-API מכיר?</th><th></th></tr>
+    <tr class="in" style="--d:.6s"><td><b>EmetGuardView</b></td><td class="yes">כן</td><td class="no">לא</td><td>ה-API לא מפנה לתצוגה</td></tr>
+    <tr class="in" style="--d:1.0s"><td><b>EmetGuardAPI</b></td><td class="no">לא</td><td class="yes">כן</td><td>התצוגה מדברת עם ה-API רק דרך HTTP</td></tr>
+    <tr class="in" style="--d:1.4s"><td><b>DAL</b></td><td class="no">לא, ואסור</td><td class="yes">כן</td><td>התצוגה לא ניגשת לשכבת בסיס הנתונים</td></tr>
+    <tr class="flash" style="--d:2.0s"><td><b style="color:var(--model)">Model</b></td><td class="yes">כן, הפניה ישירה</td><td class="yes">כן, דרך DAL</td><td><b>השכבה היחידה שכולם מכירים</b></td></tr>
+  </table>
+  <div class="row" style="margin-top:20px">
+    <div class="col card in" style="--d:2.6s">Model מתארת <b>מה זה משתמש</b>.<br><code>UserValidator</code> מתארת <b>מה זה משתמש תקין</b>.</div>
+    <div class="col card in" style="--d:3.0s">לא צריך להוסיף אף Project Reference. ההפניות כבר קיימות מהגרסאות הקודמות.</div>
+  </div>
+  <div class="remember in" style="--d:3.6s"><b>שימו לב:</b> "שם המשתמש כבר תפוס" צריך שאילתה, ולכן נשאר ב-<code>UserDB</code>. ב-Model רק בדיקות על הטקסט עצמו.</div>
+</section>
+
+<!-- 5 הכללים -->
+<section class="slide">
+  <h2>הכללים</h2>
+  <p class="sub">כל שדה וכלל משלו. כמה דוגמאות: מה עובר ומה נדחה</p>
+  <div class="row">
+    <div class="col card in" style="--d:.2s">
+      <div class="pill b-view">שם משתמש</div>
+      <p style="margin:10px 0">3 עד 20 תווים. רק אותיות באנגלית, ספרות וקו תחתון.</p>
+      <div class="pop" style="--d:1.0s"><span class="yes">✓</span> <code>guy_2026</code></div>
+      <div class="pop" style="--d:1.3s"><span class="no">✗</span> <code>ab</code> קצר מדי</div>
+      <div class="pop" style="--d:1.6s"><span class="no">✗</span> <code>גיא</code> עברית</div>
+      <div class="pop" style="--d:1.9s"><span class="no">✗</span> <code>test.user</code> נקודה</div>
+    </div>
+    <div class="col card in" style="--d:.4s">
+      <div class="pill b-api">אימייל</div>
+      <p style="margin:10px 0">מבנה תקין של כתובת, ונקודה אחרי ה-<code>@</code>.</p>
+      <div class="pop" style="--d:2.3s"><span class="yes">✓</span> <code>dana@school.org</code></div>
+      <div class="pop" style="--d:2.6s"><span class="no">✗</span> <code>not-an-email</code></div>
+      <div class="pop" style="--d:2.9s"><span class="no">✗</span> <code>a@b</code> אין נקודה</div>
+    </div>
+    <div class="col card in" style="--d:.6s">
+      <div class="pill b-model">סיסמה</div>
+      <p style="margin:10px 0">לפחות 8 תווים, לפחות אות אחת וספרה אחת.</p>
+      <div class="pop" style="--d:3.3s"><span class="yes">✓</span> <code>Secret2026</code></div>
+      <div class="pop" style="--d:3.6s"><span class="no">✗</span> <code>123</code> קצרה</div>
+      <div class="pop" style="--d:3.9s"><span class="no">✗</span> <code>abcdefgh</code> אין ספרה</div>
+    </div>
+  </div>
+  <div class="remember in" style="--d:4.4s"><b>בפרויקט שלכם:</b> הכללים לפי הנושא שלכם. למשל מחיר חיובי, תאריך עתידי, כמות בין 1 ל-10.</div>
+</section>
+
+<!-- 6 קוד: שם משתמש -->
+<section class="slide">
+  <h2>הקוד: בדיקת שדה אחד</h2>
+  <p class="sub">כל פעולה מחזירה מחרוזת: הודעת שגיאה, או מחרוזת ריקה אם הכול תקין</p>
+  <div class="row">
+    <pre class="in" style="--d:.2s;flex:1.5;font-size:15.5px"><span class="k">public static string</span> <span class="t">ValidateUsername</span>(<span class="k">string</span>? username)
+{
+<span class="hl flash" style="--d:1.2s">    <span class="k">if</span> (<span class="k">string</span>.IsNullOrWhiteSpace(username))
+    {
+        <span class="k">return</span> <span class="s">"יש להקליד שם משתמש."</span>;
+    }</span>
+    <span class="k">string</span> value = username.Trim();
+<span class="hl flash" style="--d:2.4s">    <span class="k">if</span> (value.Length &lt; UsernameMinLength || value.Length &gt; UsernameMaxLength)
+    {
+        <span class="k">return</span> <span class="s">$"...בין {UsernameMinLength} ל-{UsernameMaxLength} תווים."</span>;
+    }</span>
+<span class="hl flash" style="--d:3.6s">    <span class="k">foreach</span> (<span class="k">char</span> c <span class="k">in</span> value)
+    {
+        <span class="k">bool</span> isEnglishLetter = (c &gt;= <span class="s">'a'</span> &amp;&amp; c &lt;= <span class="s">'z'</span>) || (c &gt;= <span class="s">'A'</span> &amp;&amp; c &lt;= <span class="s">'Z'</span>);
+        <span class="k">bool</span> isDigit = c &gt;= <span class="s">'0'</span> &amp;&amp; c &lt;= <span class="s">'9'</span>;
+        <span class="k">if</span> (!isEnglishLetter &amp;&amp; !isDigit &amp;&amp; c != <span class="s">'_'</span>)
+        {
+            <span class="k">return</span> <span class="s">"...רק אותיות באנגלית, ספרות וקו תחתון."</span>;
+        }
+    }</span>
+<span class="hl flash" style="--d:4.8s">    <span class="k">return</span> <span class="s">""</span>;</span>
+}</pre>
+    <div class="col">
+      <div class="card in" style="--d:1.2s;margin-bottom:10px"><b>1.</b> שדה ריק? עוצרים מיד.</div>
+      <div class="card in" style="--d:2.4s;margin-bottom:10px"><b>2.</b> אורך לא בטווח? עוצרים.</div>
+      <div class="card in" style="--d:3.6s;margin-bottom:10px"><b>3.</b> עוברים על כל תו. תו אסור? עוצרים.</div>
+      <div class="card in" style="--d:4.8s"><b>4.</b> הגענו לסוף? הכול תקין, מחזירים מחרוזת ריקה.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 קוד: משתמש שלם -->
+<section class="slide">
+  <h2>הקוד: בדיקת משתמש שלם</h2>
+  <p class="sub">הפעולה <code>Validate</code> אוספת את כל השגיאות לרשימה</p>
+  <div class="row">
+    <pre class="in" style="--d:.2s;flex:1.3;font-size:16px"><span class="k">public static</span> List&lt;<span class="k">string</span>&gt; <span class="t">Validate</span>(User user)
+{
+    List&lt;<span class="k">string</span>&gt; errors = <span class="k">new</span> List&lt;<span class="k">string</span>&gt;();
+
+<span class="hl flash" style="--d:1.0s">    <span class="k">string</span> error = ValidateUsername(user.Username);
+    <span class="k">if</span> (error != <span class="s">""</span>) { errors.Add(error); }</span>
+
+<span class="hl flash" style="--d:1.8s">    error = ValidateEmail(user.Email);
+    <span class="k">if</span> (error != <span class="s">""</span>) { errors.Add(error); }</span>
+
+<span class="hl flash" style="--d:2.6s">    error = ValidatePassword(user.Password);
+    <span class="k">if</span> (error != <span class="s">""</span>) { errors.Add(error); }</span>
+
+    <span class="k">return</span> errors;
+}</pre>
+    <div class="col">
+      <div class="card in" style="--d:3.2s;margin-bottom:14px">
+        <b>הקלט:</b> <code>a</code> · <code>not-an-email</code> · <code>123</code>
+      </div>
+      <div class="card in" style="--d:3.6s"><b>הרשימה שחוזרת:</b>
+        <div class="err pop" style="--d:4.0s;margin-top:8px">שם המשתמש צריך להכיל בין 3 ל-20 תווים.</div>
+        <div class="err pop" style="--d:4.4s;margin-top:6px">כתובת האימייל לא תקינה.</div>
+        <div class="err pop" style="--d:4.8s;margin-top:6px">הסיסמה צריכה להכיל לפחות 8 תווים.</div>
+      </div>
+      <p class="in" style="--d:5.4s;font-size:19px">רשימה ריקה = הכול תקין.<br>רשימה ולא הודעה אחת: מי ששולח בקשה מקבל את כל הבעיות בבת אחת.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8 static ו-const -->
+<section class="slide">
+  <h2>שתי מילים שכדאי להבין</h2>
+  <p class="sub">ובוחן עשוי לשאול עליהן</p>
+  <div class="row" style="margin-top:20px">
+    <div class="col card in" style="--d:.2s">
+      <div class="pill b-model" style="font-size:22px">static</div>
+      <p class="big" style="font-size:21px">למחלקה אין נתונים משלה. היא רק מקבלת ערך ומחזירה תשובה.</p>
+      <p style="font-size:19px">לכן לא יוצרים ממנה עצם עם <code>new</code>, וקוראים לפעולה דרך שם המחלקה:</p>
+      <pre class="pop" style="--d:1.2s;font-size:17px">UserValidator.ValidateEmail(email);
+Math.Max(a, b);   <span class="c">// אותו רעיון</span></pre>
+    </div>
+    <div class="col card in" style="--d:.6s">
+      <div class="pill b-api" style="font-size:22px">const</div>
+      <p class="big" style="font-size:21px">קבוע: ערך שנקבע פעם אחת ולא משתנה בזמן הריצה.</p>
+      <pre class="pop" style="--d:1.8s;font-size:17px"><span class="k">public const int</span> PasswordMinLength = <span class="s">8</span>;</pre>
+      <p style="font-size:19px;margin-top:12px">המספר מופיע גם בבדיקה וגם בהודעת השגיאה. כדי לשנות את הכלל משנים <b>מספר אחד</b>, וההודעה מתעדכנת איתו.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 9 בדף -->
+<section class="slide">
+  <h2>שימוש בדף ההרשמה</h2>
+  <p class="sub">בודקים שדה אחרי שדה ומציגים את השגיאה הראשונה. בלי לפנות לשרת</p>
+  <div class="row">
+    <pre class="in" style="--d:.2s;flex:1.25;font-size:15.5px"><span class="k">string</span> error = UserValidator.ValidateUsername(username);
+<span class="k">if</span> (error == <span class="s">""</span>)
+{
+    error = UserValidator.ValidateEmail(email);
+}
+<span class="k">if</span> (error == <span class="s">""</span>)
+{
+    error = UserValidator.ValidatePassword(password);
+}
+<span class="hl flash" style="--d:2.6s"><span class="k">if</span> (error != <span class="s">""</span>)
+{
+    errorMessage = error;
+    <span class="k">return</span>;
+}</span>
+
+<span class="c">// אימות הסיסמה קיים רק בטופס, ולכן נשאר בדף</span>
+<span class="k">if</span> (password != confirmPassword) { ... }</pre>
+    <div class="col" style="display:flex;flex-direction:column;align-items:center">
+      <div class="form in" style="--d:.8s;width:380px">
+        <div class="field"><label>שם משתמש</label><div class="box"><span></span><span>dana_k</span></div></div>
+        <div class="field"><label>אימייל</label><div class="box"><span></span><span>dana@school</span></div></div>
+        <div class="field"><label>סיסמה</label><div class="box"><span></span><span>••••••••••</span></div></div>
+        <div class="err shake" style="--d:2.6s">כתובת האימייל לא תקינה.</div>
+      </div>
+      <p class="in" style="--d:3.2s;font-size:19px;text-align:center">התשובה מיידית. הבקשה לא יצאה מהדפדפן.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 ב-API -->
+<section class="slide">
+  <h2>שימוש ב-API</h2>
+  <p class="sub">בתחילת הפעולה <code>Add</code> בבקר, לפני כל גישה לבסיס הנתונים</p>
+  <pre class="in" style="--d:.2s;font-size:16.5px"><span class="k">public async</span> Task&lt;ActionResult&lt;User&gt;&gt; <span class="t">Add</span>([FromBody] User user, ...)
+{
+<span class="hl flash" style="--d:1.0s">    List&lt;<span class="k">string</span>&gt; errors = UserValidator.Validate(user);
+    <span class="k">if</span> (errors.Count &gt; 0)
+    {
+        Console.WriteLine(<span class="s">$"[Register] Failed, invalid data: {user.Username}"</span>);
+        <span class="k">return</span> BadRequest(errors);   <span class="c">// קוד 400 + רשימת השגיאות</span>
+    }</span>
+    ...   <span class="c">// רק אחר כך: שם משתמש תפוס? אימייל תפוס? שמירה</span>
+}</pre>
+  <div class="flow in" style="--d:1.8s;margin-top:26px">
+    <div class="node" style="background:#37474f">קובץ http<small>a · not-an-email · 123</small></div>
+    <div class="link" style="flex:1.6"><div class="dot go" style="background:var(--bad);--d:2.3s;--t:1.1s"></div></div>
+    <div class="node b-api">API<small>UserValidator</small></div>
+    <div class="link"></div>
+    <div class="node b-db" style="opacity:.35">MySQL<small>לא מגיעים לכאן</small></div>
+  </div>
+  <div class="row" style="margin-top:18px;align-items:center">
+    <div class="pop" style="--d:3.5s;background:var(--code);color:#ffb4ab;border-radius:10px;padding:10px 18px;font-family:Consolas,monospace;direction:ltr;font-size:19px">HTTP/1.1 400 Bad Request</div>
+    <div class="err pop" style="--d:3.8s">שם המשתמש צריך להכיל בין 3 ל-20 תווים.</div>
+    <div class="err pop" style="--d:4.1s">כתובת האימייל לא תקינה.</div>
+    <div class="err pop" style="--d:4.4s">הסיסמה צריכה להכיל לפחות 8 תווים.</div>
+  </div>
+</section>
+
+<!-- 11 נוחות מול הגנה -->
+<section class="slide">
+  <h2>נוחות מול הגנה</h2>
+  <p class="sub">למה בודקים פעמיים, אם הכללים זהים?</p>
+  <div class="row" style="margin-top:24px">
+    <div class="col card in" style="--d:.3s;border-top:6px solid var(--view)">
+      <div class="pill b-view" style="font-size:20px">הבדיקה בדף</div>
+      <p class="big">= <b>נוחות</b></p>
+      <ul class="pts" style="font-size:20px">
+        <li>תשובה מיידית למשתמש</li>
+        <li>לא שולחים לשרת בקשה מיותרת</li>
+        <li>אפשר לעקוף אותה</li>
+      </ul>
+    </div>
+    <div class="col card in" style="--d:.9s;border-top:6px solid var(--api)">
+      <div class="pill b-api" style="font-size:20px">הבדיקה בשרת</div>
+      <p class="big">= <b>הגנה</b></p>
+      <ul class="pts" style="font-size:20px">
+        <li>אי אפשר לעקוף אותה</li>
+        <li>שומרת על בסיס הנתונים</li>
+        <li>עובדת גם לאפליקציה עתידית</li>
+      </ul>
+    </div>
+  </div>
+  <div class="remember pop" style="--d:1.8s;font-size:22px;text-align:center"><b>במערכת אמיתית בודקים תמיד בשני המקומות.</b> בזכות המחלקה המשותפת, הכללים זהים בשניהם.</div>
+</section>
+
+<!-- 12 ובכניסה? -->
+<section class="slide">
+  <h2>ומה עם דף הכניסה?</h2>
+  <p class="sub">בכניסה <b>לא</b> בודקים את חוזק הסיסמה</p>
+  <div class="row" style="margin-top:20px">
+    <div class="col">
+      <table class="t in" style="--d:.3s">
+        <tr><th>משתמש התחלתי</th><th>סיסמה</th><th>עומדת בכללים?</th></tr>
+        <tr class="in" style="--d:.7s"><td><code>admin</code></td><td><code>admin</code></td><td class="no">לא, 5 תווים</td></tr>
+        <tr class="in" style="--d:1.0s"><td><code>teacher</code></td><td><code>teacher</code></td><td class="no">לא, אין ספרה</td></tr>
+        <tr class="in" style="--d:1.3s"><td><code>user</code></td><td><code>user</code></td><td class="no">לא, 4 תווים</td></tr>
+      </table>
+      <p class="in" style="--d:1.9s;font-size:21px">המשתמשים האלה נוצרו לפני שהיו כללים. אם נבדוק חוזק בכניסה, הם לא יוכלו להיכנס.</p>
+    </div>
+    <div class="col card in" style="--d:2.4s">
+      <p class="big" style="margin-top:0">הכללים חלים רק במקום שבו <b>נוצרת</b> סיסמה או משתמש חדש:</p>
+      <ul class="pts">
+        <li>הרשמה</li>
+        <li>בהמשך: החלפת סיסמה</li>
+      </ul>
+      <p style="font-size:20px">בכניסה מספיק לבדוק שהשדות לא ריקים. את השאר עושה השוואת הסיסמה מול בסיס הנתונים.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 13 משרד החינוך -->
+<section class="slide">
+  <h2>ומה זה נותן לנו מול הטופס של משרד החינוך?</h2>
+  <p class="sub">גיליון ההערכה החדש</p>
+  <div class="row" style="margin-top:26px">
+    <div class="col card pop" style="--d:.3s;border-right:6px solid var(--ok)">
+      <div class="pill" style="background:var(--ok)">דרישת חובה 4</div>
+      <p class="big">"צד לקוח יכלול ממשק משתמש נח, <b>הכולל בדיקות תקינות</b>"</p>
+    </div>
+    <div class="col card pop" style="--d:.9s;border-right:6px solid var(--model)">
+      <div class="pill b-model">הרחבה, סעיף 9</div>
+      <p class="big">"כתיבה ושימוש במחלקות <b>validation</b>"</p>
+    </div>
+  </div>
+  <div class="remember in" style="--d:1.6s;font-size:22px"><b>מחלקה אחת, שני סעיפים:</b> היא מחזקת דרישת חובה, ונספרת גם כאחד מנושאי ההרחבה.</div>
+</section>
+
+<!-- 14 משימה -->
+<section class="slide">
+  <h2>המשימה שלכם</h2>
+  <p class="sub">שלב 11 בפרויקט שלכם</p>
+  <ol class="pts" style="font-size:23px;line-height:1.75;margin-top:16px">
+    <li class="in" style="--d:.2s">צרו בשכבת Model מחלקה <code>UserValidator</code> עם בדיקה לכל שדה ופעולה <code>Validate</code>.</li>
+    <li class="in" style="--d:.5s">החליפו את הבדיקות בדף ההרשמה בקריאות למחלקה.</li>
+    <li class="in" style="--d:.8s">הוסיפו בדיקה בתחילת הפעולה שמוסיפה משתמש ב-API, עם <code>BadRequest(errors)</code>.</li>
+    <li class="in" style="--d:1.1s">הוסיפו לקובץ ה-http בקשה עם נתונים שגויים, וודאו שחוזר קוד 400.</li>
+    <li class="in" style="--d:1.4s">עדכנו בקשות קיימות בקובץ ה-http שלא עומדות בכללים החדשים.</li>
+    <li class="in" style="--d:1.7s">commit, tag בשם <code>v11</code>, Release, ושורה בטבלה שב-README.</li>
+  </ol>
+  <div class="remember in" style="--d:2.3s"><b>המדריך המלא:</b> Release "גרסה 11" במאגר EmetGuard, או הקישור בשורה 11 ב-README.</div>
+</section>
+
+</div>
+
+<div id="nav">
+  <button id="prev">הקודם ▶</button>
+  <button id="replay">↻ הפעל שוב</button>
+  <button id="next">◀ הבא</button>
+</div>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+  var slides = document.querySelectorAll('.slide');
+  var stage = document.getElementById('stage');
+  var bar = document.getElementById('bar');
+  var current = 0;
+
+  slides.forEach(function(s, i){
+    var n = document.createElement('div');
+    n.className = 'num';
+    n.textContent = (i + 1) + ' / ' + slides.length;
+    s.appendChild(n);
+  });
+
+  function fit(){
+    var scale = Math.min(window.innerWidth / 1320, (window.innerHeight - 50) / 760);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + scale + ')';
+    stage.style.marginTop = '-15px';
+  }
+
+  function show(i){
+    if (i < 0 || i >= slides.length) { return; }
+    slides[current].classList.remove('active');
+    current = i;
+    var s = slides[current];
+    void s.offsetWidth;
+    s.classList.add('active');
+    bar.style.width = ((current + 1) / slides.length * 100) + '%';
+    try { history.replaceState(null, '', '#' + (current + 1)); } catch (e) {}
+  }
+
+  function replay(){
+    var s = slides[current];
+    s.classList.remove('active');
+    void s.offsetWidth;
+    s.classList.add('active');
+  }
+
+  document.getElementById('next').onclick = function(){ show(current + 1); };
+  document.getElementById('prev').onclick = function(){ show(current - 1); };
+  document.getElementById('replay').onclick = replay;
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(current + 1); }
+    if (e.key === 'ArrowRight' || e.key === 'PageUp') { e.preventDefault(); show(current - 1); }
+    if (e.key === 'r' || e.key === 'R' || e.key === 'ר') { replay(); }
+    if (e.key === 'Home') { show(0); }
+    if (e.key === 'End') { show(slides.length - 1); }
+  });
+
+  window.addEventListener('resize', fit);
+  fit();
+  var start = parseInt((location.hash || '#1').slice(1), 10) - 1;
+  if (isNaN(start)) { start = 0; }
+  slides[0].classList.add('active');
+  show(start);
+})();
+</script>
+</body>
+</html>
