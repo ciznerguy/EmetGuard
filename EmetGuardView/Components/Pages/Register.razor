@@ -1,6 +1,5 @@
 @page "/register"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
-@using System.Net.Mail
 @using Model
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -103,13 +102,25 @@
             return;
         }
 
-        // בדיקה שהאימייל בנוי נכון, בעזרת מחלקה מוכנה של השפה
-        if (!MailAddress.TryCreate(email.Trim(), out _))
+        // נוסף בגרסה 11: בדיקת תקינות בעזרת המחלקה המשותפת UserValidator שבשכבת Model.
+        // אותה מחלקה בודקת גם ב-API, כך שהכללים בדף ובשרת זהים.
+        // בודקים שדה אחרי שדה ומציגים את השגיאה הראשונה שנמצאה
+        string error = UserValidator.ValidateUsername(username);
+        if (error == "")
         {
-            errorMessage = "כתובת האימייל לא תקינה.";
+            error = UserValidator.ValidateEmail(email);
+        }
+        if (error == "")
+        {
+            error = UserValidator.ValidatePassword(password);
+        }
+        if (error != "")
+        {
+            errorMessage = error;
             return;
         }
 
+        // אימות הסיסמה קיים רק בטופס ולא במשתמש עצמו, ולכן הבדיקה שלו נשארת בדף
         if (password != confirmPassword)
         {
             errorMessage = "הסיסמה ואימות הסיסמה לא זהים.";

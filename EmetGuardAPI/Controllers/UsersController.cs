@@ -82,6 +82,17 @@ namespace EmetGuardAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> Add([FromBody] User user, [FromQuery] string roleName = "Student")
         {
+            // נוסף בגרסה 11: בדיקת תקינות גם בשרת, בעזרת אותה מחלקה שהדף משתמש בה.
+            // הדף כבר בודק, אבל אפשר לשלוח בקשה ל-API גם בלי הדף, למשל מקובץ ה-http.
+            // הבדיקה בדף היא נוחות למשתמש, והבדיקה כאן היא הגנה
+            List<string> errors = UserValidator.Validate(user);
+            if (errors.Count > 0)
+            {
+                // קוד 400: בקשה שגויה. התשובה כוללת את רשימת כל השגיאות
+                Console.WriteLine($"[Register] Failed, invalid data: {user.Username}");
+                return BadRequest(errors);
+            }
+
             // קוד 409: שם המשתמש או האימייל כבר תפוסים.
             // נוסף בגרסה 10: הודעה בקונסולה על כל הרשמה שנכשלה
             if (await userDB.UsernameExistsAsync(user.Username))

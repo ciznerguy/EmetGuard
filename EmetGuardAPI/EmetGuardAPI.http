@@ -52,9 +52,22 @@ POST {{EmetGuardAPI_HostAddress}}/api/users
 Content-Type: application/json
 
 {
-  "username": "test.user",
+  "username": "test_user",
   "email": "test.user@example.com",
-  "password": "Test123"
+  "password": "Test1234"
+}
+
+###
+
+# נוסף בגרסה 11: הרשמה עם נתונים לא תקינים.
+# צפוי: 400 ורשימה של שלוש שגיאות (שם משתמש קצר, אימייל לא תקין, סיסמה קצרה)
+POST {{EmetGuardAPI_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "username": "a",
+  "email": "not-an-email",
+  "password": "123"
 }
 
 ###
