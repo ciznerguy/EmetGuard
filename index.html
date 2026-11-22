@@ -460,7 +460,8 @@ tr:hover td{background:#2a2a31}
   }
   function folderRow(name, depth, kidsEl, isProject, f){
     var r = el("div", "row"); r.style.paddingLeft = (10 + depth * 16) + "px";
-    var ch = el("span", "chev", "▼");
+    // ברירת המחדל: סגור
+    var ch = el("span", "chev", "▶");
     r.appendChild(ch);
     if (isProject) { r.appendChild(icon(f)); r.appendChild(el("b", "", name)); r.dataset.file = f.key; r.dataset.name = name.toLowerCase(); }
     else { var fi = el("span", "ico", "▸"); fi.style.background = "#d7b45a"; r.appendChild(fi); r.appendChild(el("span", "", name)); }
@@ -480,7 +481,7 @@ tr:hover td{background:#2a2a31}
     items.forEach(function(it){
       if (typeof it === "string") { parent.appendChild(fileRow(it, depth)); return; }
       if (it.file) { parent.appendChild(fileRow(it.file, depth)); return; }
-      var kids = el("div", "kids");
+      var kids = el("div", "kids closed");
       if (it.folder) { parent.appendChild(folderRow(it.folder, depth, kids, false)); }
       else { var f = files[it.id]; f.key = it.id; parent.appendChild(folderRow(f.name, depth, kids, true, f)); }
       build(it.kids, kids, depth + 1);
@@ -527,6 +528,16 @@ tr:hover td{background:#2a2a31}
     if (f.code) { html += "<h2>דוגמה מהקוד</h2><div class='codebox'>" + f.code + "</div>"; }
     p.innerHTML = html;
   }
+  // כשנבחר קובץ (למשל מקישור), פותחים את התיקיות שמעליו כדי שיראו אותו בעץ
+  function openParents(row){
+    var p = row.parentElement;
+    while (p && p.classList.contains("kids")) {
+      p.classList.remove("closed");
+      var head = p.previousElementSibling;
+      if (head) { var c = head.querySelector(".chev"); if (c) { c.textContent = "▼"; } }
+      p = p.parentElement;
+    }
+  }
   function route(){
     var key = decodeURIComponent((location.hash || "#overview").slice(1));
     var pageId;
@@ -540,7 +551,7 @@ tr:hover td{background:#2a2a31}
       if (b.dataset.go === key) { b.classList.add("on"); } else { b.classList.remove("on"); }
     });
     document.querySelectorAll(".tree .row").forEach(function(r){
-      if (key === "file/" + r.dataset.file) { r.classList.add("sel"); } else { r.classList.remove("sel"); }
+      if (key === "file/" + r.dataset.file) { r.classList.add("sel"); openParents(r); } else { r.classList.remove("sel"); }
     });
     renderTabs(key);
     var path = "EmetGuard › " + tabLabel(key);
