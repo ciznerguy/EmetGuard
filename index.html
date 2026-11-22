@@ -217,25 +217,24 @@ tr:hover td{background:#2a2a31}
 <article class="page" id="p-requirements">
   <h1>חלקי החובה</h1>
   <p class="lead">דרישות החובה לפי גיליון ההערכה של משרד החינוך (מגמה 883589), ולצד כל אחת: איפה היא נמצאת בפרויקט הדוגמה ובאיזו גרסה.</p>
-  <p><span class="st ok">קיים</span> בקוד &nbsp; <span class="st part">חלקי</span> קיים לטבלת המשתמשים, ובהמשך גם לשאר הטבלאות &nbsp; <span class="st later">בהמשך</span></p>
 
   <h2>דרישות חובה 1-6</h2>
   <table>
-    <tr><th>#</th><th>דרישה</th><th>איפה בפרויקט</th><th>גרסה</th><th>מצב</th></tr>
-    <tr><td class="num">1</td><td>ממשק למערכת מידע: שליפה מכמה טבלאות, עדכון, ועובד בזמן הבחינה</td><td><span class="where">UserDB · UsersController</span><br>הרשמה, כניסה, שליפת משתמש עם שם התפקיד (JOIN)</td><td>3, 5, 6</td><td><span class="st part">חלקי</span></td></tr>
-    <tr><td class="num">2</td><td>שימוש בנתונים ובפקדים, שאילתות מורכבות, חיתוך ועדכון</td><td><span class="where">UserDB</span><br>שאילתות עם פרמטרים, JOIN לתפקידים, ספירה לפי תפקיד (GROUP BY), עדכון סיסמה ואימייל</td><td>3</td><td><span class="st part">חלקי</span></td></tr>
-    <tr><td class="num">3</td><td>מסד נתונים מנורמל: לפחות 4 טבלאות, טבלה מקשרת, מפתחות זרים</td><td><span class="where">DatabaseInitializer</span><br>7 טבלאות, LessonAttendees מקשרת, מפתחות זרים</td><td>2</td><td><span class="st ok">קיים</span></td></tr>
-    <tr><td class="num">4</td><td>ממשק משתמש נוח, כולל בדיקות תקינות</td><td><span class="where">Home · Login · Register · UserValidator</span><br>עיצוב Bootstrap, בדיקות קלט בדף וב-API</td><td>4, 5, 11</td><td><span class="st ok">קיים</span></td></tr>
-    <tr><td class="num">5</td><td>שימוש נכון בתכנות מונחה עצמים, כולל ירושה</td><td><span class="where">BaseEntity → User</span><br>ירושה, בנאים, base, override של ToString</td><td>3</td><td><span class="st ok">קיים</span></td></tr>
-    <tr><td class="num">6</td><td>כמה רמות הרשאה, והממשק מציג רק מה שמותר</td><td>מנהל, מורה ותלמיד. דף ראשי לכל תפקיד</td><td>8 (מטלה)</td><td><span class="st ok">קיים</span></td></tr>
+    <tr><th>#</th><th>דרישה</th><th>איפה בפרויקט</th><th>גרסה</th></tr>
+    <tr><td class="num">1</td><td>ממשק למערכת מידע: שליפה מכמה טבלאות, עדכון, ועובד בזמן הבחינה</td><td><span class="where">UserDB · UsersController</span><br>הרשמה, כניסה, שליפת משתמש עם שם התפקיד (JOIN)</td><td>3, 5, 6</td></tr>
+    <tr><td class="num">2</td><td>שימוש בנתונים ובפקדים, שאילתות מורכבות, חיתוך ועדכון</td><td><span class="where">UserDB</span><br>שאילתות עם פרמטרים, JOIN לתפקידים, ספירה לפי תפקיד (GROUP BY), עדכון סיסמה ואימייל</td><td>3</td></tr>
+    <tr><td class="num">3</td><td>מסד נתונים מנורמל: לפחות 4 טבלאות, טבלה מקשרת, מפתחות זרים</td><td><span class="where">DatabaseInitializer</span><br>7 טבלאות, LessonAttendees מקשרת, מפתחות זרים</td><td>2</td></tr>
+    <tr><td class="num">4</td><td>ממשק משתמש נוח, כולל בדיקות תקינות</td><td><span class="where">Home · Login · Register · UserValidator</span><br>עיצוב Bootstrap, בדיקות קלט בדף וב-API</td><td>4, 5, 11</td></tr>
+    <tr><td class="num">5</td><td>שימוש נכון בתכנות מונחה עצמים, כולל ירושה</td><td><span class="where">BaseEntity → User</span><br>ירושה, בנאים, base, override של ToString</td><td>3</td></tr>
+    <tr><td class="num">6</td><td>כמה רמות הרשאה, והממשק מציג רק מה שמותר</td><td>מנהל, מורה ותלמיד. דף ראשי לכל תפקיד</td><td>8 (מטלה)</td></tr>
   </table>
 
   <h2>דרישות החלופה</h2>
   <table>
-    <tr><th>חלופה</th><th>מה נדרש</th><th>איפה בפרויקט</th><th>מצב</th></tr>
-    <tr><td><b>שירותי רשת</b></td><td>שרת-לקוח, סביבה חסרת מצב, Web Service שכתב התלמיד עם שליפה, הוספה, עדכון ומחיקה, והעברת אובייקטים ורשימות</td><td><span class="where">EmetGuardAPI · UsersController</span><br>ASP.NET Core, ‏<code>List&lt;User&gt;</code> ב-JSON</td><td><span class="st ok">קיים</span></td></tr>
-    <tr><td><b>תכנות אסינכרוני</b></td><td>טיפול בנתונים בשרת במנגנון אסינכרוני, אירועים ונציגים (delegates)</td><td><span class="where">async/await · UserSession.OnChange</span></td><td><span class="st ok">קיים</span></td></tr>
-    <tr><td><b>מערכות מנהליות</b></td><td>תיק ניתוח: ייזום, מערכת קיימת ועתידית, ארגון, Use Case, תרשים פעילות, ERD/DSD</td><td>מסמך הייזום ומסמך תכנון בסיס הנתונים</td><td><span class="st part">חלקי</span></td></tr>
+    <tr><th>חלופה</th><th>מה נדרש</th><th>איפה בפרויקט</th></tr>
+    <tr><td><b>שירותי רשת</b></td><td>שרת-לקוח, סביבה חסרת מצב, Web Service שכתב התלמיד עם שליפה, הוספה, עדכון ומחיקה, והעברת אובייקטים ורשימות</td><td><span class="where">EmetGuardAPI · UsersController</span><br>ASP.NET Core, ‏<code>List&lt;User&gt;</code> ב-JSON</td></tr>
+    <tr><td><b>תכנות אסינכרוני</b></td><td>טיפול בנתונים בשרת במנגנון אסינכרוני, אירועים ונציגים (delegates)</td><td><span class="where">async/await · UserSession.OnChange</span></td></tr>
+    <tr><td><b>מערכות מנהליות</b></td><td>תיק ניתוח: ייזום, מערכת קיימת ועתידית, ארגון, Use Case, תרשים פעילות, ERD/DSD</td><td>מסמך הייזום ומסמך תכנון בסיס הנתונים</td></tr>
   </table>
 
   <h2>הרחבות: צריך 3 נושאים</h2>
@@ -243,14 +242,14 @@ tr:hover td{background:#2a2a31}
   <div class="grid g2">
     <div class="card"><b>סעיף 8</b>
       <ul style="margin:6px 0 0;padding-right:20px">
-        <li>הצפנה והגנה על סיסמאות: גיבוב BCrypt <span class="st ok">גרסה 7</span></li>
-        <li>user control: הרכיבים Field ו-Logo <span class="st ok">גרסה 4</span></li>
+        <li>הצפנה והגנה על סיסמאות: גיבוב BCrypt <span class="st later">גרסה 7</span></li>
+        <li>user control: הרכיבים Field ו-Logo <span class="st later">גרסה 4</span></li>
       </ul></div>
     <div class="card"><b>סעיף 9</b>
       <ul style="margin:6px 0 0;padding-right:20px">
-        <li>הגנה מפני SQL Injection בעזרת פרמטרים <span class="st ok">גרסה 3</span></li>
-        <li>קוד אסינכרוני <span class="st ok">כל הגרסאות</span></li>
-        <li>כתיבה ושימוש במחלקות validation <span class="st ok">גרסה 11</span></li>
+        <li>הגנה מפני SQL Injection בעזרת פרמטרים <span class="st later">גרסה 3</span></li>
+        <li>קוד אסינכרוני <span class="st later">כל הגרסאות</span></li>
+        <li>כתיבה ושימוש במחלקות validation <span class="st later">גרסה 11</span></li>
       </ul></div>
   </div>
   <div class="note"><b>סעיף 7, בינה מלאכותית:</b> השנה רשות, וכל נתיב בו נספר כנושא מסעיף 8. בשנה הבאה (תשפ"ח) הוא יהפוך לחובה.</div>
