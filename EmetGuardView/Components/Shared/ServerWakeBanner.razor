@@ -4,6 +4,7 @@
 @inject ServerWakeService WakeService
 @inject IJSRuntime JS
 
+@* ▼▼▼ נעזרתי בבינה מלאכותית: עיצוב ה-HTML וה-CSS בקטע זה, עד הסימון "סוף הקטע" ▼▼▼ *@
 @if (!isChecking && !apiAwake)
 {
     <div class="container mt-4">
@@ -40,6 +41,7 @@
         <div class="alert alert-success shadow-sm" role="alert">שרת ה-API ובסיס הנתונים פעילים. אפשר להירשם ולהיכנס.</div>
     </div>
 }
+@* ▲▲▲ סוף הקטע שנעזרתי בו בבינה מלאכותית ▲▲▲ *@
 
 @code {
     private bool isChecking = true;
