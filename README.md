@@ -49,6 +49,7 @@
 | [תכונות ב-C#: get ו-set, ולמה לא ויתרנו על הכימוס](https://github.com/ciznerguy/EmetGuard/releases/download/v3/v3-appendix-properties.pdf) | 3 |
 | [Bootstrap לעומק, עם דוגמאות מהאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-pages-design-guide.pdf) | 4 |
 | [פביקון: מה זה, איך יוצרים ואיך מעלים לאתר](https://github.com/ciznerguy/EmetGuard/releases/download/v4/v4-appendix-favicon.pdf) | 4 |
+| [איך משתמשים במחלקה בלי ליצור עצם: פעולות static](https://github.com/ciznerguy/EmetGuard/releases/download/v11/v11-appendix-static.pdf) | 11 |
 
 ### מצגת: חלקי הפרויקט (הכנה למבחן)
 
