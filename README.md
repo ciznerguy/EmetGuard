@@ -34,7 +34,7 @@
 
 | נושא | מה לומדים | מדריך |
 |---|---|---|
-| Remote DB | בסיס נתונים MySQL בענן (Aiven), ובחירה בקוד בין השרת המקומי לשרת בענן | [מדריך Remote DB](enrichment/remote-db-guide.pdf) |
+| Remote DB | בסיס נתונים MySQL בענן (TiDB Cloud), ובחירה בקוד בין השרת המקומי לשרת בענן | [מדריך Remote DB](enrichment/remote-db-guide.pdf) |
 | Website Hosting | פרסום האתר באינטרנט ב-Render עם Docker. האתר של פרויקט הדוגמה: [emetguard.onrender.com](https://emetguard.onrender.com) | [מדריך Website Hosting](enrichment/website-hosting-guide.pdf) |
 
 ## נספחים
